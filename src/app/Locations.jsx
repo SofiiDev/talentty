@@ -29,7 +29,7 @@ function TransferModal({ location, onClose }) {
   return (
     <Modal open title={`Transferir personal — ${location.name}`} onClose={onClose}>
       {members.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
           Esta locación no tiene personal asignado.
         </p>
       ) : (
@@ -138,7 +138,7 @@ export default function Locations() {
                       <Badge tone={statusTone[loc.status]}>{loc.status}</Badge>
                     </div>
                     <p className="mt-0.5 text-sm text-slate-500">{loc.type}</p>
-                    <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-slate-400">
+                    <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-slate-500">
                       <MapPin className="h-3.5 w-3.5" /> {loc.address}{loc.city && ` · ${loc.city}`}
                     </p>
                   </div>
@@ -146,11 +146,11 @@ export default function Locations() {
                 </div>
 
                 <div className="mt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Personal ({members.length})
                   </p>
                   {members.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-slate-200 py-4 text-center text-xs text-slate-400">
+                    <p className="rounded-xl border border-dashed border-slate-200 py-4 text-center text-xs text-slate-500">
                       Sin personal asignado.
                     </p>
                   ) : (

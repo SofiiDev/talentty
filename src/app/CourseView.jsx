@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle,
-  FileText, CheckCircle2, Circle, ExternalLink, Eye, Award,
+  FileText, CheckCircle2, Circle, ExternalLink, Eye, Award, Star,
+  MessageCircle, Send, FileDown,
 } from 'lucide-react'
 import { useStore } from '../store.jsx'
-import { Badge, Button, Avatar, ProgressBar, inputCls } from '../components/ui.jsx'
+import { Badge, Button, Avatar, ProgressBar, inputCls, Field } from '../components/ui.jsx'
 import { toEmbedUrl } from '../lib/embed.js'
 import { platformMeta } from '../lib/video.jsx'
+import { exportCertificate } from '../lib/certificatePdf.js'
+import { RatingStars } from './Courses.jsx'
 
 function VideoEmbed({ url, title }) {
   const embed = toEmbedUrl(url)
@@ -34,10 +37,14 @@ function VideoEmbed({ url, title }) {
 
 export default function CourseView() {
   const { courseId } = useParams()
-  const { data, courseById, enrollments } = useStore()
+  const { data, courseById, enrollments, reviews, courseQuestions, talentById } = useStore()
   const course = courseById(courseId)
   const [viewerId, setViewerId] = useState(data.talents[0]?.id || '')
   const [openModule, setOpenModule] = useState(null)
+  const [reviewForm, setReviewForm] = useState(null) // {rating, comment}
+  const [newQuestion, setNewQuestion] = useState('')
+  const [replyFor, setReplyFor] = useState(null) // questionId
+  const [replyText, setReplyText] = useState('')
 
   if (!course) {
     return (
@@ -60,6 +67,51 @@ export default function CourseView() {
   const linkedSeminars = data.seminars
     .filter((s) => s.courseId === course.id && s.status !== 'Cancelado' && s.status !== 'Finalizado')
     .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
+
+  const courseReviews = (data.reviews || []).filter((r) => r.courseId === course.id)
+  const avgRating = courseReviews.length
+    ? courseReviews.reduce((a, r) => a + r.rating, 0) / courseReviews.length
+    : 0
+  const myReview = courseReviews.find((r) => r.talentId === viewerId)
+  const questions = (data.courseQuestions || []).filter((q) => q.courseId === course.id)
+
+  const submitReview = (e) => {
+    e.preventDefault()
+    const payload = {
+      courseId: course.id,
+      talentId: viewerId,
+      rating: Number(reviewForm.rating),
+      comment: reviewForm.comment.trim(),
+      createdAt: new Date().toISOString().slice(0, 10),
+    }
+    if (myReview) reviews.update(myReview.id, payload)
+    else reviews.add(payload)
+    setReviewForm(null)
+  }
+
+  const askQuestion = (e) => {
+    e.preventDefault()
+    const text = newQuestion.trim()
+    if (!text) return
+    courseQuestions.add({
+      courseId: course.id, talentId: viewerId, text,
+      createdAt: new Date().toISOString().slice(0, 10), answers: [],
+    })
+    setNewQuestion('')
+  }
+
+  const sendReply = (q) => {
+    const text = replyText.trim()
+    if (!text) return
+    courseQuestions.update(q.id, {
+      answers: [...q.answers, {
+        id: Math.random().toString(36).slice(2, 10),
+        talentId: viewerId, text, createdAt: new Date().toISOString().slice(0, 10),
+      }],
+    })
+    setReplyFor(null)
+    setReplyText('')
+  }
 
   const enroll = () => {
     enrollments.add({
@@ -119,6 +171,7 @@ export default function CourseView() {
             <Badge tone={course.status === 'Publicado' ? 'green' : 'amber'}>{course.status}</Badge>
           </div>
           <h1 className="mt-3 text-2xl font-bold text-slate-900">{course.title}</h1>
+          {courseReviews.length > 0 && <div className="mt-1.5"><RatingStars value={avgRating} count={courseReviews.length} /></div>}
           <p className="mt-2 max-w-3xl text-slate-600">{course.description}</p>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
             <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" /> {course.instructor || 'Sin instructor'}</span>
@@ -143,7 +196,7 @@ export default function CourseView() {
             <h2 className="mb-1 font-semibold text-slate-900">Contenido del curso</h2>
             <p className="mb-4 text-sm text-slate-500">{total} módulos · marcá cada módulo al completarlo</p>
             {total === 0 ? (
-              <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+              <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
                 Este curso todavía no tiene módulos cargados.
               </p>
             ) : (
@@ -165,9 +218,9 @@ export default function CourseView() {
                           <p className={`text-sm font-medium ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
                             {i + 1}. {m.title}
                           </p>
-                          {m.description && !isOpen && <p className="truncate text-xs text-slate-400">{m.description}</p>}
+                          {m.description && !isOpen && <p className="truncate text-xs text-slate-500">{m.description}</p>}
                         </button>
-                        <div className="flex items-center gap-1.5 text-slate-400">
+                        <div className="flex items-center gap-1.5 text-slate-500">
                           {m.videoUrl && <PlayCircle className="h-4 w-4 text-sky-500" title="Incluye video" />}
                           {m.fileUrl && <FileText className="h-4 w-4 text-amber-500" title="Incluye material" />}
                         </div>
@@ -183,7 +236,7 @@ export default function CourseView() {
                             </a>
                           )}
                           {!m.description && !m.videoUrl && !m.fileUrl && (
-                            <p className="text-sm text-slate-400">Este módulo no tiene contenido adicional.</p>
+                            <p className="text-sm text-slate-500">Este módulo no tiene contenido adicional.</p>
                           )}
                         </div>
                       )}
@@ -191,6 +244,167 @@ export default function CourseView() {
                   )
                 })}
               </ol>
+            )}
+          </section>
+
+          {/* Reseñas */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-semibold text-slate-900">Reseñas</h2>
+                {courseReviews.length > 0
+                  ? <RatingStars value={avgRating} count={courseReviews.length} />
+                  : <p className="text-sm text-slate-500">Este curso todavía no tiene reseñas.</p>}
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() => setReviewForm(myReview ? { rating: myReview.rating, comment: myReview.comment } : { rating: 5, comment: '' })}
+              >
+                <Star className="h-4 w-4" /> {myReview ? 'Editar mi reseña' : 'Dejar una reseña'}
+              </Button>
+            </div>
+
+            {reviewForm && (
+              <form onSubmit={submitReview} className="mb-5 space-y-3 rounded-xl border border-brand-200 bg-brand-50/40 p-4">
+                <div>
+                  <span className="mb-1 block text-sm font-medium text-slate-700">Tu puntuación</span>
+                  <div className="flex gap-1" role="radiogroup" aria-label="Puntuación de 1 a 5 estrellas">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        role="radio"
+                        aria-checked={Number(reviewForm.rating) === n}
+                        aria-label={`${n} estrella${n === 1 ? '' : 's'}`}
+                        onClick={() => setReviewForm((f) => ({ ...f, rating: n }))}
+                      >
+                        <Star className={`h-7 w-7 ${n <= Number(reviewForm.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 hover:text-amber-300'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Field label="Comentario">
+                  <textarea className={inputCls} rows={2} value={reviewForm.comment}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, comment: e.target.value }))}
+                    placeholder="¿Qué te pareció el curso?" />
+                </Field>
+                <div className="flex justify-end gap-3">
+                  <Button type="button" variant="ghost" onClick={() => setReviewForm(null)}>Cancelar</Button>
+                  <Button type="submit">Publicar reseña</Button>
+                </div>
+              </form>
+            )}
+
+            {courseReviews.length > 0 && (
+              <ul className="space-y-4">
+                {courseReviews.map((r) => {
+                  const author = talentById(r.talentId)
+                  return (
+                    <li key={r.id} className="flex gap-3">
+                      <Avatar name={author?.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-medium text-slate-900">{author?.name || 'Perfil eliminado'}</span>
+                          <span className="flex" aria-label={`${r.rating} de 5 estrellas`}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star key={n} className={`h-3.5 w-3.5 ${n <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} aria-hidden="true" />
+                            ))}
+                          </span>
+                          <span className="text-xs text-slate-500">{r.createdAt}</span>
+                          {r.talentId === viewerId && <Badge tone="brand">Tu reseña</Badge>}
+                        </div>
+                        {r.comment && <p className="mt-1 text-sm text-slate-600">{r.comment}</p>}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* Preguntas y respuestas */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="mb-1 font-semibold text-slate-900">Preguntas y respuestas</h2>
+            <p className="mb-4 text-sm text-slate-500">Consultá al instructor o a tus compañeros sobre el contenido.</p>
+
+            <form onSubmit={askQuestion} className="mb-5 flex gap-2">
+              <input
+                className={inputCls}
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+                placeholder="Escribí tu pregunta…"
+                aria-label="Nueva pregunta"
+              />
+              <Button type="submit" disabled={!newQuestion.trim()}><Send className="h-4 w-4" /> Preguntar</Button>
+            </form>
+
+            {questions.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-500">
+                Todavía no hay preguntas. ¡Hacé la primera!
+              </p>
+            ) : (
+              <ul className="space-y-5">
+                {questions.map((q) => {
+                  const author = talentById(q.talentId)
+                  return (
+                    <li key={q.id}>
+                      <div className="flex gap-3">
+                        <Avatar name={author?.name} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-medium text-slate-900">{author?.name || 'Perfil eliminado'}</span>
+                            <span className="text-xs text-slate-500">{q.createdAt}</span>
+                          </div>
+                          <p className="mt-0.5 text-sm text-slate-700">{q.text}</p>
+
+                          {q.answers.length > 0 && (
+                            <ul className="mt-3 space-y-3 border-l-2 border-slate-100 pl-4">
+                              {q.answers.map((a) => {
+                                const replier = talentById(a.talentId)
+                                return (
+                                  <li key={a.id} className="flex gap-2.5">
+                                    <Avatar name={replier?.name} size="sm" />
+                                    <div>
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-sm font-medium text-slate-900">{replier?.name || 'Perfil eliminado'}</span>
+                                        {course.instructor === replier?.name && <Badge tone="brand">Instructor/a</Badge>}
+                                        <span className="text-xs text-slate-500">{a.createdAt}</span>
+                                      </div>
+                                      <p className="mt-0.5 text-sm text-slate-600">{a.text}</p>
+                                    </div>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          )}
+
+                          {replyFor === q.id ? (
+                            <div className="mt-3 flex gap-2">
+                              <input
+                                className={inputCls}
+                                autoFocus
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); sendReply(q) } }}
+                                placeholder="Escribí tu respuesta…"
+                                aria-label="Respuesta"
+                              />
+                              <Button type="button" onClick={() => sendReply(q)} disabled={!replyText.trim()}>Responder</Button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { setReplyFor(q.id); setReplyText('') }}
+                              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand-600 hover:text-brand-700"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" /> Responder
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
             )}
           </section>
         </div>
@@ -207,13 +421,24 @@ export default function CourseView() {
             </div>
             {enrollment || doneCount > 0 ? (
               <div className="mt-4">
-                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Tu avance</p>
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Tu avance</p>
                 <ProgressBar value={progress} />
                 <p className="mt-2 text-xs text-slate-500">{doneCount} de {total} módulos completados</p>
                 {progress >= 100 && (
-                  <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-                    <Award className="h-4 w-4" /> ¡Curso completado!
-                  </p>
+                  <div className="mt-3 space-y-2">
+                    <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                      <Award className="h-4 w-4" /> ¡Curso completado!
+                    </p>
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        const ok = exportCertificate({ talent: viewer, course })
+                        if (!ok) alert('El navegador bloqueó la ventana del certificado. Permití ventanas emergentes para este sitio.')
+                      }}
+                    >
+                      <FileDown className="h-4 w-4" /> Descargar certificado
+                    </Button>
+                  </div>
                 )}
               </div>
             ) : (

@@ -126,17 +126,17 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
         {/* Archivos del curso */}
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Archivos del curso (PDF, presentaciones…)</span>
-          <p className="mb-2 text-xs text-slate-400">Pegá el enlace al archivo (Drive, Dropbox, intranet o sitio propio).</p>
+          <p className="mb-2 text-xs text-slate-500">Pegá el enlace al archivo (Drive, Dropbox, intranet o sitio propio).</p>
           {form.attachments.length > 0 && (
             <ul className="mb-2 space-y-2">
               {form.attachments.map((a) => (
                 <li key={a.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                  <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                  <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                   <span className="flex-1 truncate">{a.name}</span>
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, attachments: f.attachments.filter((x) => x.id !== a.id) }))}
-                    className="text-slate-400 hover:text-rose-600"
+                    className="text-slate-500 hover:text-rose-600"
                     title="Quitar archivo"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -162,14 +162,14 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
               {form.modules.map((m, i) => (
                 <li key={m.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-400">{i + 1}.</span>
+                    <span className="text-xs font-semibold text-slate-500">{i + 1}.</span>
                     <span className="flex-1 truncate font-medium">{m.title}</span>
                     {m.videoUrl && <Video className="h-3.5 w-3.5 text-sky-500" title="Con video" />}
                     {m.fileUrl && <FileText className="h-3.5 w-3.5 text-amber-500" title="Con archivo" />}
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, modules: f.modules.filter((x) => x.id !== m.id) }))}
-                      className="text-slate-400 hover:text-rose-600"
+                      className="text-slate-500 hover:text-rose-600"
                       title="Quitar módulo"
                     >
                       <Trash2 className="h-4 w-4" />

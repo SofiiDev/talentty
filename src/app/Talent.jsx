@@ -112,7 +112,7 @@ export default function Talent() {
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table className="w-full min-w-[880px] text-left text-sm">
-            <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-5 py-3 font-medium">Profesional</th>
                 <th className="px-5 py-3 font-medium">Rol / Área</th>
@@ -137,12 +137,12 @@ export default function Talent() {
                   </td>
                   <td className="px-5 py-3">
                     <p className="text-slate-700">{t.role}</p>
-                    <p className="text-xs text-slate-400">{t.department}</p>
+                    <p className="text-xs text-slate-500">{t.department}</p>
                   </td>
                   <td className="px-5 py-3">
                     {t.locationId && locationById(t.locationId)
                       ? <Badge tone="blue">{locationById(t.locationId).name}</Badge>
-                      : <span className="text-xs text-slate-400">Sin asignar</span>}
+                      : <span className="text-xs text-slate-500">Sin asignar</span>}
                   </td>
                   <td className="px-5 py-3"><Badge tone="violet">{t.level}</Badge></td>
                   <td className="px-5 py-3">

@@ -203,7 +203,7 @@ export default function SeminarView() {
                 <p className="truncate text-xs text-slate-500">{viewer?.role}</p>
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 text-xs text-slate-500">
               Las notificaciones de este seminario se envían a {viewer?.notifyEmail || viewer?.email}.
             </p>
           </section>
@@ -211,7 +211,7 @@ export default function SeminarView() {
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
             <h2 className="mb-3 text-sm font-semibold text-slate-900">Asistentes ({seminar.attendees.length})</h2>
             {seminar.attendees.length === 0 ? (
-              <p className="text-sm text-slate-400">Todavía no hay asistentes anotados.</p>
+              <p className="text-sm text-slate-500">Todavía no hay asistentes anotados.</p>
             ) : (
               <ul className="space-y-2">
                 {seminar.attendees.map((id) => {

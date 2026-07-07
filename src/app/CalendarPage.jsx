@@ -91,7 +91,7 @@ export default function CalendarPage() {
 
           <div className="grid grid-cols-7 gap-1">
             {WEEKDAYS.map((d) => (
-              <div key={d} className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-400">{d}</div>
+              <div key={d} className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">{d}</div>
             ))}
             {cells.map((d, i) => {
               if (d === null) return <div key={`x${i}`} />
@@ -124,7 +124,7 @@ export default function CalendarPage() {
                         className={`h-1.5 w-1.5 rounded-full ${s.platform === 'zoom' ? 'bg-sky-500' : 'bg-emerald-500'}`}
                       />
                     ))}
-                    {events.length > 3 && <span className="text-[9px] leading-none text-slate-400">+{events.length - 3}</span>}
+                    {events.length > 3 && <span className="text-[9px] leading-none text-slate-500">+{events.length - 3}</span>}
                   </span>
                 </button>
               )
@@ -142,7 +142,7 @@ export default function CalendarPage() {
           <h2 className="font-semibold text-slate-900">{selected}</h2>
           <p className="mb-4 text-sm text-slate-500">{daySeminars.length} seminario{daySeminars.length === 1 ? '' : 's'}</p>
           {daySeminars.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-400">
+            <p className="rounded-xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500">
               Sin seminarios este día.
             </p>
           ) : (

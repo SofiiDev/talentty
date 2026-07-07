@@ -14,7 +14,7 @@ function Stat({ label, value, sub, Icon, to }) {
         </span>
       </div>
       <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{sub}</p>
+      <p className="mt-1 text-xs text-slate-500">{sub}</p>
     </Link>
   )
 }
@@ -60,7 +60,7 @@ export default function Dashboard() {
             <Link to="/app/seminarios" className="text-sm font-medium text-brand-600 hover:text-brand-700">Ver todos →</Link>
           </div>
           {upcoming.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-400">No hay seminarios programados.</p>
+            <p className="py-8 text-center text-sm text-slate-500">No hay seminarios programados.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {upcoming.map((s) => {
@@ -93,7 +93,7 @@ export default function Dashboard() {
             <Link to="/app/seguimiento" className="text-sm font-medium text-brand-600 hover:text-brand-700">Ver seguimiento →</Link>
           </div>
           {recentEnrollments.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-400">Todavía no hay inscripciones.</p>
+            <p className="py-8 text-center text-sm text-slate-500">Todavía no hay inscripciones.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {recentEnrollments.map((e) => {
@@ -124,7 +124,7 @@ export default function Dashboard() {
           <Link to="/app/planes" className="text-sm font-medium text-brand-600 hover:text-brand-700">Gestionar →</Link>
         </div>
         {plans.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-400">Todavía no hay planes de carrera creados.</p>
+          <p className="py-8 text-center text-sm text-slate-500">Todavía no hay planes de carrera creados.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {plans.slice(0, 4).map((p) => {

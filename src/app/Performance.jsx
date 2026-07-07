@@ -90,7 +90,7 @@ export default function Performance() {
         <p className="mt-0.5 mb-4 text-sm text-slate-500">Última evaluación de cada persona · eje X: desempeño · eje Y: potencial</p>
         <div className="flex gap-3">
           <div className="flex w-6 shrink-0 items-center justify-center">
-            <span className="-rotate-90 whitespace-nowrap text-xs font-semibold uppercase tracking-widest text-slate-400">Potencial →</span>
+            <span className="-rotate-90 whitespace-nowrap text-xs font-semibold uppercase tracking-widest text-slate-500">Potencial →</span>
           </div>
           <div className="flex-1">
             <div className="grid grid-cols-3 gap-2">
@@ -107,7 +107,7 @@ export default function Performance() {
                 )),
               )}
             </div>
-            <p className="mt-2 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Desempeño →</p>
+            <p className="mt-2 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">Desempeño →</p>
           </div>
         </div>
       </section>
@@ -123,7 +123,7 @@ export default function Performance() {
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-5 py-3 font-medium">Profesional</th>
                 <th className="px-5 py-3 font-medium">Período</th>

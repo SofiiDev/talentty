@@ -92,8 +92,9 @@ export default function AppLayout() {
   const [open, setOpen] = useState(false)
   return (
     <div className="min-h-screen bg-slate-50">
+      <a href="#contenido" className="skip-link">Saltar al contenido</a>
       {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-slate-900 lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-slate-900 lg:block" aria-label="Navegación principal">
         <Sidebar />
       </aside>
 
@@ -118,7 +119,7 @@ export default function AppLayout() {
         </span>
       </div>
 
-      <main className="px-4 py-8 sm:px-8 lg:ml-64">
+      <main id="contenido" className="px-4 py-8 sm:px-8 lg:ml-64">
         <div className="mx-auto max-w-6xl">
           <Outlet />
         </div>

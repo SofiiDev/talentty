@@ -35,7 +35,7 @@ export function AddToCalendar({ seminar }) {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
-              <ExternalLink className="h-4 w-4 text-slate-400" /> Google Calendar
+              <ExternalLink className="h-4 w-4 text-slate-500" /> Google Calendar
             </a>
             <button
               onClick={() => {
@@ -44,7 +44,7 @@ export function AddToCalendar({ seminar }) {
               }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
-              <Download className="h-4 w-4 text-slate-400" /> Descargar .ics (Outlook/Apple)
+              <Download className="h-4 w-4 text-slate-500" /> Descargar .ics (Outlook/Apple)
             </button>
           </div>
         </>
@@ -77,7 +77,7 @@ export function SeminarCard({ seminar, onEdit, onDelete }) {
           </p>
           {seminar.description && <p className="mt-1.5 text-sm text-slate-500">{seminar.description}</p>}
           {course && (
-            <p className="mt-1 text-xs text-slate-400">Vinculado al curso: <span className="font-medium text-slate-600">{course.title}</span></p>
+            <p className="mt-1 text-xs text-slate-500">Vinculado al curso: <span className="font-medium text-slate-600">{course.title}</span></p>
           )}
           {(seminar.videoUrl || (seminar.materials?.length || 0) > 0) && (
             <div className="mt-2.5 flex flex-wrap gap-2">

@@ -168,12 +168,12 @@ export default function SeminarFormModal({ mode, initial, onClose, onSubmit }) {
             <ul className="mb-2 space-y-2">
               {form.materials.map((m) => (
                 <li key={m.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                  <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                  <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                   <span className="flex-1 truncate">{m.name}</span>
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, materials: f.materials.filter((x) => x.id !== m.id) }))}
-                    className="text-slate-400 hover:text-rose-600"
+                    className="text-slate-500 hover:text-rose-600"
                     title="Quitar material"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -194,7 +194,7 @@ export default function SeminarFormModal({ mode, initial, onClose, onSubmit }) {
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Asistentes</span>
           {data.talents.length === 0 ? (
-            <p className="text-sm text-slate-400">Primero agregá talento a tu organización.</p>
+            <p className="text-sm text-slate-500">Primero agregá talento a tu organización.</p>
           ) : (
             <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
               {data.talents.map((t) => (

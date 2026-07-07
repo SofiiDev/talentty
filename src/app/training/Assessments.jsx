@@ -115,7 +115,7 @@ function AssessmentFormModal({ mode, initial, onClose, onSubmit }) {
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, questions: f.questions.filter((x) => x.id !== q.id) }))}
-                      className="text-slate-400 hover:text-rose-600"
+                      className="text-slate-500 hover:text-rose-600"
                       title="Quitar pregunta"
                     >
                       <IconTrash />
@@ -174,7 +174,7 @@ function AssessmentFormModal({ mode, initial, onClose, onSubmit }) {
                   onChange={() => toggleRecipient(t.id)}
                 />
                 <span className="truncate text-slate-700">{t.name}</span>
-                <span className="ml-auto truncate text-xs text-slate-400">{t.email}</span>
+                <span className="ml-auto truncate text-xs text-slate-500">{t.email}</span>
               </label>
             ))}
           </div>
@@ -277,7 +277,7 @@ export default function Assessments() {
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-slate-900">{a.title}</h3>
                     {a.description && <p className="mt-0.5 text-sm text-slate-500">{a.description}</p>}
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-500">
                       {a.questions.length} preguntas · aprobación {a.passScore}% · {approved}/{a.recipients.length} aprobadas
                       {plan && <> · Plan: <span className="font-medium text-slate-600">{plan.title}</span></>}
                       {a.createdAt && <> · Creada el {a.createdAt}</>}
@@ -286,7 +286,7 @@ export default function Assessments() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setExpanded((e) => ({ ...e, [a.id]: !isOpen }))}
-                      className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-600"
                       title={isOpen ? 'Ocultar preguntas' : 'Ver preguntas'}
                     >
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -316,7 +316,7 @@ export default function Assessments() {
 
                 <div className="border-t border-slate-100 px-5 py-4">
                   {a.recipients.length === 0 ? (
-                    <p className="text-sm text-slate-400">Sin destinatarios. Editá la evaluación para asignarlos.</p>
+                    <p className="text-sm text-slate-500">Sin destinatarios. Editá la evaluación para asignarlos.</p>
                   ) : (
                     <ul className="divide-y divide-slate-100">
                       {a.recipients.map((r) => {
@@ -326,11 +326,11 @@ export default function Assessments() {
                             <Avatar name={t?.name} size="sm" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-slate-900">{t?.name || 'Perfil eliminado'}</p>
-                              <p className="truncate text-xs text-slate-400">{t?.notifyEmail || t?.email}</p>
+                              <p className="truncate text-xs text-slate-500">{t?.notifyEmail || t?.email}</p>
                             </div>
                             <Badge tone={recipientTone[r.status]}>{r.status}</Badge>
                             {r.score != null && <span className="text-sm font-semibold text-slate-700">{r.score}%</span>}
-                            {r.sentAt && <span className="text-xs text-slate-400">Enviada el {r.sentAt}</span>}
+                            {r.sentAt && <span className="text-xs text-slate-500">Enviada el {r.sentAt}</span>}
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => sendEmail(a, r)}

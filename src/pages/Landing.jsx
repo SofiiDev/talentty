@@ -195,7 +195,7 @@ export default function Landing() {
                 Ver cómo funciona
               </a>
             </div>
-            <p className="mt-4 text-sm text-slate-400">Sin tarjeta de crédito · Configuración en 5 minutos</p>
+            <p className="mt-4 text-sm text-slate-500">Sin tarjeta de crédito · Configuración en 5 minutos</p>
           </div>
           <HeroMock />
         </div>
@@ -204,7 +204,7 @@ export default function Landing() {
       {/* Logos */}
       <section className="border-y border-slate-100 bg-slate-50 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500">
             Equipos que ya desarrollan su talento con Talentty
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-lg font-bold text-slate-300">
@@ -292,7 +292,7 @@ export default function Landing() {
                   <p className="text-sm text-slate-500">Sesiones rápidas y workshops directamente en Meet.</p>
                 </div>
               </div>
-              <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-sm text-slate-400">
+              <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500">
                 Próximamente: Teams, calendario y recordatorios automáticos
               </div>
             </div>
@@ -390,7 +390,7 @@ export default function Landing() {
               <a href="#precios" className="hover:text-brand-700">Precios</a>
               <Link to="/app" className="hover:text-brand-700">Plataforma</Link>
             </div>
-            <p className="text-sm text-slate-400">© {new Date().getFullYear()} Talentty. Todos los derechos reservados.</p>
+            <p className="text-sm text-slate-500">© {new Date().getFullYear()} Talentty. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

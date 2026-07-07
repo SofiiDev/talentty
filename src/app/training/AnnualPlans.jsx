@@ -88,7 +88,7 @@ function PlanFormModal({ mode, initial, onClose, onSubmit }) {
 
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Marcos normativos aplicables</span>
-          <p className="mb-2 text-xs text-slate-400">Configurables desde la pestaña “Marcos normativos”.</p>
+          <p className="mb-2 text-xs text-slate-500">Configurables desde la pestaña “Marcos normativos”.</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {data.frameworks.map((fw) => (
               <label key={fw.id} className="flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 p-3 hover:bg-slate-50">
@@ -109,9 +109,9 @@ function PlanFormModal({ mode, initial, onClose, onSubmit }) {
 
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Personas incluidas en el plan</span>
-          <p className="mb-2 text-xs text-slate-400">También podés sumar personas en bloque con la carga masiva de perfiles.</p>
+          <p className="mb-2 text-xs text-slate-500">También podés sumar personas en bloque con la carga masiva de perfiles.</p>
           {data.talents.length === 0 ? (
-            <p className="text-sm text-slate-400">Primero agregá talento a tu organización.</p>
+            <p className="text-sm text-slate-500">Primero agregá talento a tu organización.</p>
           ) : (
             <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
               {data.talents.map((t) => (
@@ -123,7 +123,7 @@ function PlanFormModal({ mode, initial, onClose, onSubmit }) {
                     onChange={() => toggleParticipant(t.id)}
                   />
                   <span className="truncate text-slate-700">{t.name}</span>
-                  <span className="ml-auto truncate text-xs text-slate-400">{t.role}</span>
+                  <span className="ml-auto truncate text-xs text-slate-500">{t.role}</span>
                 </label>
               ))}
             </div>
@@ -210,7 +210,7 @@ function ItemFormModal({ mode, initial, onClose, onSubmit }) {
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Funciones que requieren esta capacitación</span>
           {data.jobFunctions.length === 0 ? (
-            <p className="text-sm text-slate-400">Primero definí funciones en la pestaña “Funciones”.</p>
+            <p className="text-sm text-slate-500">Primero definí funciones en la pestaña “Funciones”.</p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {data.jobFunctions.map((jf) => (
@@ -249,7 +249,7 @@ function PeopleModal({ plan, onClose }) {
         {participants.length} persona{participants.length === 1 ? '' : 's'} incluida{participants.length === 1 ? '' : 's'} en <span className="font-medium text-slate-700">{plan.title}</span>
       </p>
       {participants.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
           Sin personas asignadas. Editá el plan o usá la carga masiva para incluirlas.
         </p>
       ) : (
@@ -264,7 +264,7 @@ function PeopleModal({ plan, onClose }) {
                   <p className="truncate text-xs text-slate-500">{t.role}{t.department && ` · ${t.department}`}</p>
                 </div>
                 <div className="flex max-w-56 flex-wrap justify-end gap-1">
-                  {fns.length === 0 ? <span className="text-xs text-slate-400">Sin función asignada</span> : fns.map((f) => <Badge key={f} tone="violet">{f}</Badge>)}
+                  {fns.length === 0 ? <span className="text-xs text-slate-500">Sin función asignada</span> : fns.map((f) => <Badge key={f} tone="violet">{f}</Badge>)}
                 </div>
               </li>
             )
@@ -299,22 +299,22 @@ function ItemDetailModal({ plan, item, onClose }) {
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="rounded-xl bg-slate-50 p-3">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><Repeat className="h-3.5 w-3.5" /> Frecuencia</p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500"><Repeat className="h-3.5 w-3.5" /> Frecuencia</p>
           <p className="mt-0.5 text-sm font-semibold text-slate-800">{item.frequency}</p>
         </div>
         <div className="rounded-xl bg-slate-50 p-3">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><Calendar className="h-3.5 w-3.5" /> Mes planificado</p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500"><Calendar className="h-3.5 w-3.5" /> Mes planificado</p>
           <p className="mt-0.5 text-sm font-semibold text-slate-800">{item.month}</p>
         </div>
         <div className="rounded-xl bg-slate-50 p-3">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><BookOpen className="h-3.5 w-3.5" /> Curso vinculado</p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500"><BookOpen className="h-3.5 w-3.5" /> Curso vinculado</p>
           <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">{course ? course.title : '—'}</p>
         </div>
       </div>
 
       {functions.length > 0 && (
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Funciones alcanzadas</p>
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Funciones alcanzadas</p>
           <div className="flex flex-wrap gap-1.5">
             {functions.map((f) => <Badge key={f.id} tone="violet">{f.name}</Badge>)}
           </div>
@@ -322,12 +322,12 @@ function ItemDetailModal({ plan, item, onClose }) {
       )}
 
       <div className="mt-4">
-        <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Users className="h-3.5 w-3.5" /> Personas alcanzadas ({covered.length})
-          {!functions.length && <span className="normal-case text-slate-400">— todas las del plan</span>}
+          {!functions.length && <span className="normal-case text-slate-500">— todas las del plan</span>}
         </p>
         {covered.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-500">
             Nadie alcanzado todavía: asigná funciones al ítem o personas al plan.
           </p>
         ) : (
@@ -462,13 +462,13 @@ export default function AnnualPlans() {
 
                 <div className="p-5">
                   {plan.items.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400">
+                    <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-500">
                       Sin procedimientos ni cursos cargados. Agregá el primero.
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[860px] text-left text-sm">
-                        <thead className="text-xs uppercase tracking-wide text-slate-400">
+                        <thead className="text-xs uppercase tracking-wide text-slate-500">
                           <tr>
                             <th className="px-3 py-2 font-medium">Código</th>
                             <th className="px-3 py-2 font-medium">Capacitación</th>
@@ -504,7 +504,7 @@ export default function AnnualPlans() {
                                 <td className="px-3 py-2.5 text-slate-600">{item.month}</td>
                                 <td className="px-3 py-2.5">
                                   <div className="flex max-w-52 flex-wrap gap-1">
-                                    {item.functionIds.length === 0 && <span className="text-xs text-slate-400">Todas</span>}
+                                    {item.functionIds.length === 0 && <span className="text-xs text-slate-500">Todas</span>}
                                     {item.functionIds.map((id) => {
                                       const jf = functionById(id)
                                       return jf ? <Badge key={id}>{jf.name}</Badge> : null
@@ -524,8 +524,8 @@ export default function AnnualPlans() {
                                 </td>
                                 <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                                   <div className="flex items-center justify-end gap-1">
-                                    <button onClick={() => setItemModal({ mode: 'edit', plan, item })} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
-                                    <button onClick={() => setToDelete({ kind: 'item', plan, item })} className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
+                                    <button onClick={() => setItemModal({ mode: 'edit', plan, item })} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
+                                    <button onClick={() => setToDelete({ kind: 'item', plan, item })} className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
                                   </div>
                                 </td>
                               </tr>
@@ -540,7 +540,7 @@ export default function AnnualPlans() {
                     <Button variant="secondary" onClick={() => setItemModal({ mode: 'create', plan })}>
                       <Plus className="h-4 w-4" /> Agregar procedimiento o curso
                     </Button>
-                    {plan.notes && <p className="max-w-xl text-xs text-slate-400">📎 {plan.notes}</p>}
+                    {plan.notes && <p className="max-w-xl text-xs text-slate-500">📎 {plan.notes}</p>}
                   </div>
                 </div>
               </div>

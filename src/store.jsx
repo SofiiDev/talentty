@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { isRemoteEnabled, loadRemote, saveRemoteDebounced } from './lib/supabase.js'
 
 const STORAGE_KEY = 'talentty-data-v2'
 
@@ -47,7 +48,7 @@ const seed = () => ({
       id: 'c1', title: 'BPF para personal de planta (ANMAT 3827/18)',
       description: 'Buenas Prácticas de Fabricación aplicadas: higiene, documentación, contaminación cruzada y cultura de calidad.',
       category: 'Calidad', level: 'Inicial', durationHours: 12,
-      modality: 'Online en vivo', instructor: 'Lucía Fernández', status: 'Publicado',
+      modality: 'Online en vivo', instructor: 'Lucía Fernández', status: 'Publicado', featured: true,
       coverImageUrl: '', introVideoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       attachments: [
         { id: 'a1', name: 'POE-001 Higiene y conducta (PDF)', url: 'https://example.com/poe-001.pdf' },
@@ -285,6 +286,34 @@ const seed = () => ({
       ],
     },
   ],
+  reviews: [
+    {
+      id: 'r1', courseId: 'c1', talentId: 't3', rating: 5,
+      comment: 'Muy claro y aplicado a la realidad de la planta. Los ejemplos de desviaciones son excelentes.', createdAt: '2026-06-20',
+    },
+    {
+      id: 'r2', courseId: 'c1', talentId: 't2', rating: 4,
+      comment: 'Buen contenido. Sumaría más casos prácticos de documentación.', createdAt: '2026-06-22',
+    },
+    {
+      id: 'r3', courseId: 'c2', talentId: 't6', rating: 5,
+      comment: 'El módulo de calibración es de lo mejor que vi sobre el tema.', createdAt: '2026-06-25',
+    },
+  ],
+  courseQuestions: [
+    {
+      id: 'cq1', courseId: 'c1', talentId: 't2',
+      text: '¿La evaluación final es obligatoria para aprobar el curso?',
+      createdAt: '2026-06-18',
+      answers: [
+        {
+          id: 'cqa1', talentId: 't3',
+          text: 'Sí, se requiere un mínimo de 70% en la evaluación de eficacia para registrar la capacitación en el legajo.',
+          createdAt: '2026-06-18',
+        },
+      ],
+    },
+  ],
   evaluations: [
     {
       id: 'ev1', talentId: 't1', period: '2026 H1', performance: 4, potential: 4,
@@ -323,9 +352,22 @@ const StoreContext = createContext(null)
 
 export function StoreProvider({ children }) {
   const [data, setData] = useState(load)
+  const [remoteStatus, setRemoteStatus] = useState(isRemoteEnabled ? 'syncing' : 'local')
+
+  // Al iniciar, si hay backend Supabase configurado, se trae el estado remoto
+  useEffect(() => {
+    if (!isRemoteEnabled) return
+    loadRemote()
+      .then((remote) => {
+        if (remote) setData({ ...seed(), ...remote })
+        setRemoteStatus('connected')
+      })
+      .catch(() => setRemoteStatus('error'))
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    saveRemoteDebounced(data, () => setRemoteStatus('error'))
   }, [data])
 
   const makeCrud = (key) => ({
@@ -356,6 +398,9 @@ export function StoreProvider({ children }) {
     annualPlans: makeCrud('annualPlans'),
     assessments: makeCrud('assessments'),
     locations: makeCrud('locations'),
+    reviews: makeCrud('reviews'),
+    courseQuestions: makeCrud('courseQuestions'),
+    remoteStatus,
     reset: () => setData(seed()),
     talentById: (id) => data.talents.find((t) => t.id === id),
     courseById: (id) => data.courses.find((c) => c.id === id),

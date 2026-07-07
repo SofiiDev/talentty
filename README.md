@@ -18,7 +18,7 @@ Plataforma edtech para el **upskilling y la gestión de talento**: landing page 
   - **Seguimiento**: inscripciones a cursos con porcentaje de avance y estado.
   - **Configuración**: exportación de datos y restauración de demo.
 
-Los datos se persisten en `localStorage` del navegador (demo sin backend).
+Los datos se guardan en `localStorage` y, si está configurado, se sincronizan automáticamente con **Supabase** (ver más abajo).
 
 ## Stack
 
@@ -47,3 +47,20 @@ El repo ya incluye `netlify.toml` con el build command, el directorio de publica
 4. Hacé clic en **Deploy site**. Cada push a la rama conectada redeploya automáticamente.
 
 > La regla de redirect `/* → /index.html` es necesaria para que las rutas del SaaS (`/app/...`) funcionen al recargar la página.
+
+## Backend con Supabase (opcional)
+
+Sin configurar nada, la app funciona en **modo local** (localStorage). Para persistencia real multi-dispositivo:
+
+1. Creá un proyecto gratis en [supabase.com](https://supabase.com).
+2. En el dashboard del proyecto: **SQL Editor → New query**, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo (crea la tabla `workspace_state` con sus políticas).
+3. En **Project Settings → API** copiá la *Project URL* y la *anon public key*.
+4. En Netlify: **Site configuration → Environment variables**, agregá:
+   - `VITE_SUPABASE_URL` = la Project URL
+   - `VITE_SUPABASE_ANON_KEY` = la anon key
+   - `VITE_TALENTTY_WORKSPACE` = un identificador (opcional, default `default`)
+5. Redeployá el sitio (**Deploys → Trigger deploy**). En la app, **Configuración → Backend** muestra "Conectado a Supabase".
+
+Para desarrollo local, copiá `.env.example` a `.env` y completá las variables.
+
+> ⚠️ Las políticas RLS incluidas son de demo (lectura/escritura con la anon key). Para producción multi-cliente, migrar a Supabase Auth con políticas por usuario/tenant.

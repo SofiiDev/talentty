@@ -133,7 +133,7 @@ export default function BulkImportModal({ onClose, defaultPlanId = '' }) {
                     <span className="font-medium text-slate-800">{r.name}</span> · {r.email} · {r.role || 'sin rol'}
                   </li>
                 ))}
-                {newRows.length > 8 && <li className="text-slate-400">… y {newRows.length - 8} más</li>}
+                {newRows.length > 8 && <li className="text-slate-500">… y {newRows.length - 8} más</li>}
               </ul>
             </div>
           )}

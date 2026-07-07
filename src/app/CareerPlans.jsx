@@ -123,7 +123,7 @@ export default function CareerPlans() {
                     <p className="mt-0.5 text-sm text-slate-500">
                       {talent?.name || 'Perfil eliminado'} → <span className="font-medium text-slate-700">{p.targetRole}</span>
                     </p>
-                    <p className="text-xs text-slate-400">{p.startDate || '—'} → {p.endDate || '—'}</p>
+                    <p className="text-xs text-slate-500">{p.startDate || '—'} → {p.endDate || '—'}</p>
                   </div>
                   <RowActions onEdit={() => openEdit(p)} onDelete={() => setToDelete(p)} />
                 </div>
@@ -147,14 +147,14 @@ export default function CareerPlans() {
                           className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                         />
                         <div className="min-w-0">
-                          <p className={`text-sm ${m.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{m.title}</p>
+                          <p className={`text-sm ${m.done ? 'text-slate-500 line-through' : 'text-slate-700'}`}>{m.title}</p>
                           {course && <p className="text-xs text-brand-600">📚 {course.title}</p>}
                         </div>
                       </li>
                     )
                   })}
                   {p.milestones.length === 0 && (
-                    <li className="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-center text-xs text-slate-400">
+                    <li className="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-center text-xs text-slate-500">
                       Sin hitos definidos. Editá el plan para agregarlos.
                     </li>
                   )}
@@ -204,7 +204,7 @@ export default function CareerPlans() {
 
           <div>
             <span className="mb-1 block text-sm font-medium text-slate-700">Hitos del plan</span>
-            <p className="mb-2 text-xs text-slate-400">
+            <p className="mb-2 text-xs text-slate-500">
               Podés asignar cualquier curso del catálogo (incluidos los dados de alta por los entrenadores).
               Al guardar, la persona queda inscripta automáticamente en los cursos asignados y aparece en Seguimiento.
             </p>
@@ -221,7 +221,7 @@ export default function CareerPlans() {
                       <button
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, milestones: f.milestones.filter((x) => x.id !== m.id) }))}
-                        className="text-slate-400 hover:text-rose-600"
+                        className="text-slate-500 hover:text-rose-600"
                         title="Quitar hito"
                       >
                         <IconTrash />

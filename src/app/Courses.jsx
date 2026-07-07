@@ -1,15 +1,29 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText, Eye } from 'lucide-react'
+import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText, Eye, Star, Search } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
-  ConfirmDelete, Button, Badge, EmptyState, PageHeader, IconEdit, IconTrash,
+  ConfirmDelete, Button, Badge, EmptyState, PageHeader, IconEdit, IconTrash, inputCls,
 } from '../components/ui.jsx'
 import CourseFormModal, { courseStatuses } from '../components/forms/CourseFormModal.jsx'
 
 export const statusTone = { Publicado: 'green', Borrador: 'amber', Archivado: 'slate' }
 
-export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
+export function RatingStars({ value, count }) {
+  if (!count) return null
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600" title={`${value.toFixed(1)} de 5 (${count} reseñas)`}>
+      <span className="flex" aria-hidden="true">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Star key={n} className={`h-3.5 w-3.5 ${n <= Math.round(value) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+        ))}
+      </span>
+      {value.toFixed(1)} <span className="text-slate-500">({count})</span>
+    </span>
+  )
+}
+
+export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, onToggleFeatured }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow hover:shadow-md">
       {course.coverImageUrl && (
@@ -17,10 +31,26 @@ export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
       )}
       <div className="flex flex-1 flex-col p-5">
       <div className="mb-3 flex items-start justify-between gap-2">
-        <Badge tone="brand">{course.category}</Badge>
-        <Badge tone={statusTone[course.status]}>{course.status}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="brand">{course.category}</Badge>
+          {course.featured && <Badge tone="amber">★ Destacado</Badge>}
+        </div>
+        <div className="flex items-center gap-1">
+          <Badge tone={statusTone[course.status]}>{course.status}</Badge>
+          {onToggleFeatured && (
+            <button
+              onClick={onToggleFeatured}
+              className={`rounded-lg p-1.5 ${course.featured ? 'text-amber-500 hover:text-amber-600' : 'text-slate-300 hover:text-amber-500'}`}
+              title={course.featured ? 'Quitar de destacados' : 'Destacar curso'}
+              aria-label={course.featured ? 'Quitar de destacados' : 'Destacar curso'}
+            >
+              <Star className={`h-4 w-4 ${course.featured ? 'fill-amber-400' : ''}`} />
+            </button>
+          )}
+        </div>
       </div>
       <h3 className="font-semibold text-slate-900">{course.title}</h3>
+      {rating && <div className="mt-1"><RatingStars value={rating.avg} count={rating.count} /></div>}
       <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">{course.description}</p>
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {course.durationHours} hs</span>
@@ -39,7 +69,7 @@ export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
               {m.fileUrl && <FileText className="h-3 w-3 shrink-0 text-amber-500" />}
             </li>
           ))}
-          {course.modules.length > 3 && <li className="text-slate-400">+{course.modules.length - 3} módulos más</li>}
+          {course.modules.length > 3 && <li className="text-slate-500">+{course.modules.length - 3} módulos más</li>}
         </ul>
       )}
       {((course.attachments?.length || 0) > 0 || course.introVideoUrl) && (
@@ -67,8 +97,8 @@ export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
           <Eye className="h-3.5 w-3.5" /> Vista del participante
         </Link>
         <div className="flex items-center gap-1">
-          <button onClick={onEdit} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
-          <button onClick={onDelete} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
+          <button onClick={onEdit} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
+          <button onClick={onDelete} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
         </div>
       </div>
       </div>
@@ -79,13 +109,41 @@ export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
 export default function Courses() {
   const { data, courses } = useStore()
   const [filter, setFilter] = useState('Todos')
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState('recientes')
   const [modal, setModal] = useState(null)
   const [toDelete, setToDelete] = useState(null)
 
-  const filtered = useMemo(
-    () => data.courses.filter((c) => filter === 'Todos' || c.status === filter),
-    [data.courses, filter],
-  )
+  const ratings = useMemo(() => {
+    const map = {}
+    for (const r of data.reviews || []) {
+      if (!map[r.courseId]) map[r.courseId] = { sum: 0, count: 0 }
+      map[r.courseId].sum += r.rating
+      map[r.courseId].count += 1
+    }
+    for (const k of Object.keys(map)) map[k] = { avg: map[k].sum / map[k].count, count: map[k].count }
+    return map
+  }, [data.reviews])
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase()
+    const list = data.courses.filter(
+      (c) =>
+        (filter === 'Todos' || (filter === 'Destacados' ? c.featured : c.status === filter)) &&
+        (!q ||
+          c.title.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.category.toLowerCase().includes(q) ||
+          (c.instructor || '').toLowerCase().includes(q)),
+    )
+    const sorters = {
+      recientes: (a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''),
+      titulo: (a, b) => a.title.localeCompare(b.title),
+      duracion: (a, b) => a.durationHours - b.durationHours,
+      valoracion: (a, b) => (ratings[b.id]?.avg || 0) - (ratings[a.id]?.avg || 0),
+    }
+    return [...list].sort(sorters[sort])
+  }, [data.courses, filter, query, sort, ratings])
 
   const submit = (payload) => {
     if (modal.mode === 'create') courses.add({ ...payload, createdAt: new Date().toISOString().slice(0, 10) })
@@ -101,16 +159,36 @@ export default function Courses() {
         action={<Button onClick={() => setModal({ mode: 'create' })}><Plus className="h-4 w-4" /> Crear curso</Button>}
       />
 
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+          <input
+            className={`${inputCls} w-72 pl-9`}
+            placeholder="Buscar por título, categoría o instructor…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Buscar cursos"
+          />
+        </div>
+        <select className={`${inputCls} w-auto`} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Ordenar cursos">
+          <option value="recientes">Más recientes</option>
+          <option value="valoracion">Mejor valorados</option>
+          <option value="titulo">Título (A-Z)</option>
+          <option value="duracion">Duración (menor a mayor)</option>
+        </select>
+      </div>
+
       <div className="mb-5 flex flex-wrap gap-2">
-        {['Todos', ...courseStatuses].map((s) => (
+        {['Todos', 'Destacados', ...courseStatuses].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
+            aria-pressed={filter === s}
             className={`rounded-full px-4 py-1.5 text-sm font-medium ${
               filter === s ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            {s}
+            {s === 'Destacados' ? '★ Destacados' : s}
           </button>
         ))}
       </div>
@@ -129,8 +207,10 @@ export default function Courses() {
               key={c.id}
               course={c}
               enrolledCount={data.enrollments.filter((e) => e.courseId === c.id).length}
+              rating={ratings[c.id]}
               onEdit={() => setModal({ mode: 'edit', item: c })}
               onDelete={() => setToDelete(c)}
+              onToggleFeatured={() => courses.update(c.id, { featured: !c.featured })}
             />
           ))}
         </div>

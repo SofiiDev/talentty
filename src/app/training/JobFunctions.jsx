@@ -90,11 +90,11 @@ export default function JobFunctions() {
               </div>
 
               <div className="mt-4">
-                <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <ClipboardCheck className="h-3.5 w-3.5" /> Capacitaciones requeridas
                 </p>
                 {jf.requiredTraining.length === 0 ? (
-                  <p className="text-sm text-slate-400">Sin capacitaciones definidas.</p>
+                  <p className="text-sm text-slate-500">Sin capacitaciones definidas.</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {jf.requiredTraining.map((t) => (
@@ -149,7 +149,7 @@ export default function JobFunctions() {
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, requiredTraining: f.requiredTraining.filter((x) => x !== t) }))}
-                      className="text-slate-400 hover:text-rose-600"
+                      className="text-slate-500 hover:text-rose-600"
                       title="Quitar"
                     >
                       <IconTrash />
@@ -173,7 +173,7 @@ export default function JobFunctions() {
           <div>
             <span className="mb-1 block text-sm font-medium text-slate-700">Personas con esta función</span>
             {data.talents.length === 0 ? (
-              <p className="text-sm text-slate-400">Primero agregá talento a tu organización.</p>
+              <p className="text-sm text-slate-500">Primero agregá talento a tu organización.</p>
             ) : (
               <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
                 {data.talents.map((t) => (
