@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import {
   LayoutDashboard, Users, BookOpen, Video, CalendarDays, Target,
-  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu,
+  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu, ClipboardList,
 } from 'lucide-react'
 
 const sections = [
@@ -28,6 +28,7 @@ const sections = [
       { to: '/app/cursos', label: 'Cursos', Icon: BookOpen },
       { to: '/app/seminarios', label: 'Seminarios', Icon: Video },
       { to: '/app/entrenador', label: 'Entrenador', Icon: GraduationCap },
+      { to: '/app/capacitacion', label: 'Capacitación anual', Icon: ClipboardList },
     ],
   },
   {

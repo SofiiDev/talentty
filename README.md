@@ -11,6 +11,10 @@ Plataforma edtech para el **upskilling y la gestión de talento**: landing page 
   - **Cursos**: creación de cursos con módulos, categoría, nivel, modalidad y estado de publicación.
   - **Seminarios**: programación de sesiones en vivo vinculadas con **Zoom** o **Google Meet** (validación de enlace, gestión de asistentes, botón "Unirse").
   - **Planes de carrera**: rutas de crecimiento con hitos, cursos asociados y progreso.
+  - **Capacitación anual**: planes anuales de capacitación alineados a marcos normativos configurables (ANMAT, INAME, BPF/GMP, ISO 9001…), asignación de funciones con capacitaciones requeridas por puesto, listado de procedimientos/POEs y cursos con frecuencia, mes y estado, y evaluaciones de eficacia con envío por correo y registro de resultados.
+  - **Entrenador**: alta de cursos y seminarios por formador con catálogo y métricas propias.
+  - **Desempeño**: evaluaciones de desempeño/potencial con matriz 9-box.
+  - **Calendario**: agenda mensual con exportación a Google Calendar y descarga .ics.
   - **Seguimiento**: inscripciones a cursos con porcentaje de avance y estado.
   - **Configuración**: exportación de datos y restauración de demo.
 

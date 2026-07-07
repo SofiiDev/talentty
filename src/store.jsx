@@ -101,6 +101,79 @@ const seed = () => ({
     { id: 'e3', talentId: 't3', courseId: 'c2', progress: 100, status: 'Completado', enrolledAt: '2026-04-25' },
     { id: 'e4', talentId: 't4', courseId: 'c1', progress: 10, status: 'En curso', enrolledAt: '2026-06-12' },
   ],
+  frameworks: [
+    {
+      id: 'fw1', code: 'ANMAT', name: 'ANMAT — Disp. 3827/2018 (BPF)',
+      description: 'Buenas Prácticas de Fabricación: el personal debe recibir capacitación inicial y continua, documentada y acorde a las funciones asignadas.',
+    },
+    {
+      id: 'fw2', code: 'INAME', name: 'INAME — Instituto Nacional de Medicamentos',
+      description: 'Requisitos de formación y calificación para personal de laboratorios de control de calidad y ensayos.',
+    },
+    {
+      id: 'fw3', code: 'BPF/GMP', name: 'OMS — Buenas Prácticas de Fabricación',
+      description: 'Lineamientos internacionales de GMP: programa de capacitación aprobado y evaluación de su eficacia.',
+    },
+    {
+      id: 'fw4', code: 'ISO 9001', name: 'ISO 9001:2015 — Cap. 7.2 Competencia',
+      description: 'Determinar competencias necesarias, asegurar la formación y conservar información documentada como evidencia.',
+    },
+  ],
+  jobFunctions: [
+    {
+      id: 'jf1', name: 'Responsable de Garantía de Calidad', area: 'Calidad',
+      description: 'Aprueba procedimientos, gestiona desviaciones y acciones CAPA.',
+      requiredTraining: ['POE-001 Higiene y conducta del personal', 'POE-014 Manejo de desviaciones y CAPA', 'BPF avanzado'],
+      members: ['t3'],
+    },
+    {
+      id: 'jf2', name: 'Analista de Control de Calidad', area: 'Laboratorio',
+      description: 'Ejecuta ensayos fisicoquímicos y microbiológicos según especificaciones.',
+      requiredTraining: ['POE-001 Higiene y conducta del personal', 'POE-022 Buenas prácticas de laboratorio'],
+      members: ['t2'],
+    },
+    {
+      id: 'jf3', name: 'Operario de Producción', area: 'Producción',
+      description: 'Opera equipos de elaboración y acondicionamiento en áreas limpias.',
+      requiredTraining: ['POE-001 Higiene y conducta del personal', 'POE-008 Vestimenta en áreas limpias'],
+      members: ['t1', 't4'],
+    },
+  ],
+  annualPlans: [
+    {
+      id: 'ap1', year: 2026, title: 'Plan Anual de Capacitación 2026 — Planta',
+      area: 'Toda la planta', responsible: 'Lucía Fernández', status: 'Aprobado',
+      frameworkIds: ['fw1', 'fw3'],
+      notes: 'Revisión trimestral por Garantía de Calidad. Los registros de asistencia y evaluación se archivan en el legajo de capacitación de cada empleado.',
+      items: [
+        { id: 'i1', code: 'POE-001', title: 'Higiene y conducta del personal', type: 'POE / Procedimiento', frequency: 'Anual', month: 'Marzo', functionIds: ['jf1', 'jf2', 'jf3'], courseId: '', status: 'Completado' },
+        { id: 'i2', code: 'POE-008', title: 'Vestimenta en áreas limpias', type: 'POE / Procedimiento', frequency: 'Semestral', month: 'Abril', functionIds: ['jf3'], courseId: '', status: 'En curso' },
+        { id: 'i3', code: 'CAP-002', title: 'Introducción a BPF (ANMAT 3827/18)', type: 'Curso', frequency: 'Anual', month: 'Mayo', functionIds: ['jf1', 'jf2', 'jf3'], courseId: '', status: 'Programado' },
+        { id: 'i4', code: 'POE-014', title: 'Manejo de desviaciones y CAPA', type: 'Taller', frequency: 'Anual', month: 'Agosto', functionIds: ['jf1'], courseId: '', status: 'Pendiente' },
+      ],
+    },
+  ],
+  assessments: [
+    {
+      id: 'as1', title: 'Evaluación BPF básica 2026',
+      description: 'Evaluación de eficacia de la capacitación POE-001, requerida por BPF (ANMAT Disp. 3827/2018).',
+      planId: 'ap1', passScore: 70, createdAt: '2026-06-15',
+      questions: [
+        {
+          id: 'q1', text: '¿Cuándo debe realizarse el lavado de manos en planta?',
+          options: ['Solo al inicio del turno', 'Cada vez que se ingresa al área productiva', 'Una vez por semana'], correct: 1,
+        },
+        {
+          id: 'q2', text: '¿Qué debe hacerse ante una desviación de un procedimiento?',
+          options: ['Continuar y avisar al final del día', 'Registrarla e informar inmediatamente al supervisor', 'Nada si no afecta al producto'], correct: 1,
+        },
+      ],
+      recipients: [
+        { talentId: 't1', status: 'Aprobada', score: 90, sentAt: '2026-06-16' },
+        { talentId: 't2', status: 'Enviada', score: null, sentAt: '2026-06-16' },
+      ],
+    },
+  ],
   evaluations: [
     {
       id: 'ev1', talentId: 't1', period: '2026 H1', performance: 4, potential: 4,
@@ -128,8 +201,9 @@ const seed = () => ({
 const load = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    // Los datos guardados con versiones previas pueden no tener todas las colecciones
-    if (raw) return { evaluations: seed().evaluations, ...JSON.parse(raw) }
+    // Los datos guardados con versiones previas pueden no tener todas las colecciones:
+    // las que falten se completan desde los datos de ejemplo
+    if (raw) return { ...seed(), ...JSON.parse(raw) }
   } catch { /* datos corruptos: se regeneran */ }
   return seed()
 }
@@ -166,6 +240,10 @@ export function StoreProvider({ children }) {
     plans: makeCrud('plans'),
     enrollments: makeCrud('enrollments'),
     evaluations: makeCrud('evaluations'),
+    frameworks: makeCrud('frameworks'),
+    jobFunctions: makeCrud('jobFunctions'),
+    annualPlans: makeCrud('annualPlans'),
+    assessments: makeCrud('assessments'),
     reset: () => setData(seed()),
     talentById: (id) => data.talents.find((t) => t.id === id),
     courseById: (id) => data.courses.find((c) => c.id === id),
