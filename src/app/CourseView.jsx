@@ -11,6 +11,9 @@ import { toEmbedUrl } from '../lib/embed.js'
 import { platformMeta } from '../lib/video.jsx'
 import { exportCertificate } from '../lib/certificatePdf.js'
 import { RatingStars } from './Courses.jsx'
+import { Modal } from '../components/ui.jsx'
+import { FileQuestion } from 'lucide-react'
+import { courseLessons, autoGrade, hasOpenQuestions, finalScoreOf, latestAttempt, examTotalPoints } from '../lib/course.js'
 
 function VideoEmbed({ url, title }) {
   const embed = toEmbedUrl(url)
@@ -31,6 +34,115 @@ function VideoEmbed({ url, title }) {
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
+    </div>
+  )
+}
+
+function ExamTakeModal({ exam, viewerId, onClose }) {
+  const { exams } = useStore()
+  const [answers, setAnswers] = useState({})
+
+  const submit = (e) => {
+    e.preventDefault()
+    const autoScore = autoGrade(exam, answers)
+    const open = hasOpenQuestions(exam)
+    const attempt = {
+      id: Math.random().toString(36).slice(2, 10),
+      talentId: viewerId,
+      submittedAt: new Date().toISOString().slice(0, 10),
+      answers,
+      autoScore,
+      manualScores: {},
+      status: open ? 'Pendiente de corrección' : 'Corregido',
+      finalScore: null,
+      passed: null,
+    }
+    if (!open) {
+      attempt.finalScore = finalScoreOf(exam, attempt)
+      attempt.passed = attempt.finalScore >= exam.passScore
+    }
+    exams.update(exam.id, { attempts: [...(exam.attempts || []), attempt] })
+    onClose()
+  }
+
+  return (
+    <Modal open title={exam.title} onClose={onClose} wide>
+      <form onSubmit={submit} className="space-y-5">
+        {exam.description && <p className="text-sm text-slate-600">{exam.description}</p>}
+        <p className="text-xs text-slate-500">Aprobación: {exam.passScore}% · Puntaje total: {examTotalPoints(exam)} pts</p>
+        {exam.questions.map((q, i) => (
+          <fieldset key={q.id} className="rounded-xl border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-medium text-slate-800">
+              {i + 1}) {q.text} <span className="text-xs font-normal text-slate-500">({q.points} pts)</span>
+            </legend>
+            {q.type === 'multiple' ? (
+              <div className="mt-2 space-y-1.5">
+                {q.options.map((opt, j) => (
+                  <label key={j} className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
+                    <input
+                      type="radio"
+                      name={q.id}
+                      required
+                      className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500"
+                      checked={Number(answers[q.id]) === j && answers[q.id] !== undefined}
+                      onChange={() => setAnswers((a) => ({ ...a, [q.id]: j }))}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <textarea
+                className={`${inputCls} mt-2`}
+                rows={3}
+                required
+                value={answers[q.id] || ''}
+                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                placeholder="Escribí tu respuesta…"
+              />
+            )}
+          </fieldset>
+        ))}
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button type="submit">Entregar examen</Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function ExamRow({ exam, viewerId }) {
+  const [taking, setTaking] = useState(false)
+  const attempt = latestAttempt(exam, viewerId)
+  const pending = attempt?.status === 'Pendiente de corrección'
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 p-4">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+        <FileQuestion className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-slate-900">{exam.title}</p>
+        <p className="text-xs text-slate-500">{exam.questions.length} preguntas · aprobación {exam.passScore}%</p>
+      </div>
+      {attempt ? (
+        pending ? (
+          <Badge tone="amber">Entregado · pendiente de corrección manual</Badge>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Badge tone={attempt.passed ? 'green' : 'rose'}>
+              {attempt.passed ? 'Aprobado' : 'Desaprobado'} · {attempt.finalScore}%
+            </Badge>
+            {!attempt.passed && (
+              <Button variant="secondary" onClick={() => setTaking(true)}>Reintentar</Button>
+            )}
+          </div>
+        )
+      ) : (
+        <Button onClick={() => setTaking(true)}>Rendir examen</Button>
+      )}
+      {taking && <ExamTakeModal exam={exam} viewerId={viewerId} onClose={() => setTaking(false)} />}
     </div>
   )
 }
@@ -60,9 +172,12 @@ export default function CourseView() {
   const viewer = data.talents.find((t) => t.id === viewerId)
   const enrollment = data.enrollments.find((e) => e.talentId === viewerId && e.courseId === course.id)
   const completed = enrollment?.completedModules || []
-  const total = course.modules.length
-  const doneCount = course.modules.filter((m) => completed.includes(m.id)).length
+  const units = course.units || []
+  const lessons = courseLessons(course)
+  const total = lessons.length
+  const doneCount = lessons.filter((l) => completed.includes(l.id)).length
   const progress = total ? Math.round((doneCount / total) * 100) : (enrollment?.progress || 0)
+  const courseExams = (data.exams || []).filter((e) => e.courseId === course.id)
 
   const linkedSeminars = data.seminars
     .filter((s) => s.courseId === course.id && s.status !== 'Cancelado' && s.status !== 'Finalizado')
@@ -124,11 +239,11 @@ export default function CourseView() {
     })
   }
 
-  const toggleModule = (moduleId) => {
-    const next = completed.includes(moduleId)
-      ? completed.filter((id) => id !== moduleId)
-      : [...completed, moduleId]
-    const nextDone = course.modules.filter((m) => next.includes(m.id)).length
+  const toggleLesson = (lessonId) => {
+    const next = completed.includes(lessonId)
+      ? completed.filter((id) => id !== lessonId)
+      : [...completed, lessonId]
+    const nextDone = lessons.filter((l) => next.includes(l.id)).length
     const nextProgress = total ? Math.round((nextDone / total) * 100) : 0
     const patch = {
       completedModules: next,
@@ -194,58 +309,82 @@ export default function CourseView() {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
             <h2 className="mb-1 font-semibold text-slate-900">Contenido del curso</h2>
-            <p className="mb-4 text-sm text-slate-500">{total} módulos · marcá cada módulo al completarlo</p>
+            <p className="mb-4 text-sm text-slate-500">{units.length} unidades temáticas · {total} lecciones · marcá cada lección al completarla</p>
             {total === 0 ? (
               <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
-                Este curso todavía no tiene módulos cargados.
+                Este curso todavía no tiene contenido cargado.
               </p>
             ) : (
-              <ol className="space-y-2">
-                {course.modules.map((m, i) => {
-                  const isDone = completed.includes(m.id)
-                  const isOpen = openModule === m.id
-                  return (
-                    <li key={m.id} className={`rounded-xl border ${isDone ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'}`}>
-                      <div className="flex items-center gap-3 p-3">
-                        <button
-                          onClick={() => toggleModule(m.id)}
-                          className={isDone ? 'text-emerald-500' : 'text-slate-300 hover:text-brand-500'}
-                          title={isDone ? 'Marcar como pendiente' : 'Marcar como completado'}
-                        >
-                          {isDone ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
-                        </button>
-                        <button className="min-w-0 flex-1 text-left" onClick={() => setOpenModule(isOpen ? null : m.id)}>
-                          <p className={`text-sm font-medium ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
-                            {i + 1}. {m.title}
-                          </p>
-                          {m.description && !isOpen && <p className="truncate text-xs text-slate-500">{m.description}</p>}
-                        </button>
-                        <div className="flex items-center gap-1.5 text-slate-500">
-                          {m.videoUrl && <PlayCircle className="h-4 w-4 text-sky-500" title="Incluye video" />}
-                          {m.fileUrl && <FileText className="h-4 w-4 text-amber-500" title="Incluye material" />}
-                        </div>
-                      </div>
-                      {isOpen && (
-                        <div className="space-y-3 border-t border-slate-100 p-4">
-                          {m.description && <p className="text-sm text-slate-600">{m.description}</p>}
-                          {m.videoUrl && <VideoEmbed url={m.videoUrl} title={m.title} />}
-                          {m.fileUrl && (
-                            <a href={m.fileUrl} target="_blank" rel="noreferrer"
-                              className="inline-flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">
-                              <FileText className="h-4 w-4" /> Descargar material del módulo
-                            </a>
-                          )}
-                          {!m.description && !m.videoUrl && !m.fileUrl && (
-                            <p className="text-sm text-slate-500">Este módulo no tiene contenido adicional.</p>
-                          )}
-                        </div>
-                      )}
-                    </li>
-                  )
-                })}
-              </ol>
+              <div className="space-y-5">
+                {units.map((u, ui) => (
+                  <div key={u.id}>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Unidad {ui + 1}</p>
+                    <h3 className="font-semibold text-slate-900">{u.title}</h3>
+                    {u.description && <p className="mt-0.5 text-sm text-slate-500">{u.description}</p>}
+                    <ol className="mt-3 space-y-2">
+                      {u.lessons.map((m, i) => {
+                        const isDone = completed.includes(m.id)
+                        const isOpen = openModule === m.id
+                        return (
+                          <li key={m.id} className={`rounded-xl border ${isDone ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'}`}>
+                            <div className="flex items-center gap-3 p-3">
+                              <button
+                                onClick={() => toggleLesson(m.id)}
+                                className={isDone ? 'text-emerald-500' : 'text-slate-300 hover:text-brand-500'}
+                                title={isDone ? 'Marcar como pendiente' : 'Marcar como completada'}
+                              >
+                                {isDone ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
+                              </button>
+                              <button className="min-w-0 flex-1 text-left" onClick={() => setOpenModule(isOpen ? null : m.id)}>
+                                <p className={`text-sm font-medium ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
+                                  {ui + 1}.{i + 1} {m.title}
+                                </p>
+                                {m.description && !isOpen && <p className="truncate text-xs text-slate-500">{m.description}</p>}
+                              </button>
+                              <div className="flex items-center gap-1.5 text-slate-500">
+                                {m.videoUrl && <PlayCircle className="h-4 w-4 text-sky-500" title="Incluye video" />}
+                                {m.fileUrl && <FileText className="h-4 w-4 text-amber-500" title="Incluye material" />}
+                              </div>
+                            </div>
+                            {isOpen && (
+                              <div className="space-y-3 border-t border-slate-100 p-4">
+                                {m.description && <p className="text-sm text-slate-600">{m.description}</p>}
+                                {m.videoUrl && <VideoEmbed url={m.videoUrl} title={m.title} />}
+                                {m.fileUrl && (
+                                  <a href={m.fileUrl} target="_blank" rel="noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">
+                                    <FileText className="h-4 w-4" /> Descargar material de la lección
+                                  </a>
+                                )}
+                                {!m.description && !m.videoUrl && !m.fileUrl && (
+                                  <p className="text-sm text-slate-500">Esta lección no tiene contenido adicional.</p>
+                                )}
+                              </div>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </div>
+                ))}
+              </div>
             )}
           </section>
+
+          {/* Exámenes */}
+          {courseExams.length > 0 && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5">
+              <h2 className="mb-1 font-semibold text-slate-900">Exámenes</h2>
+              <p className="mb-4 text-sm text-slate-500">
+                Las preguntas de opción múltiple se corrigen automáticamente; las abiertas las corrige el instructor.
+              </p>
+              <div className="space-y-3">
+                {courseExams.map((exam) => (
+                  <ExamRow key={exam.id} exam={exam} viewerId={viewerId} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Reseñas */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5">

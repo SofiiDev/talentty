@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { isRemoteEnabled, loadRemote, saveRemoteDebounced } from './lib/supabase.js'
 
-const STORAGE_KEY = 'talentty-data-v2'
+const STORAGE_KEY = 'talentty-data-v3'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -54,10 +54,21 @@ const seed = () => ({
         { id: 'a1', name: 'POE-001 Higiene y conducta (PDF)', url: 'https://example.com/poe-001.pdf' },
         { id: 'a2', name: 'Disposición ANMAT 3827/2018 (PDF)', url: 'https://example.com/anmat-3827.pdf' },
       ],
-      modules: [
-        { id: 'm1', title: 'Introducción a las BPF', description: 'Marco normativo, responsabilidades y trazabilidad.', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', fileUrl: 'https://example.com/modulo-1.pdf' },
-        { id: 'm2', title: 'Higiene y conducta del personal', description: 'Lavado de manos, vestimenta y circulación en planta.', videoUrl: '', fileUrl: '' },
-        { id: 'm3', title: 'Documentación y registros', description: 'Buenas prácticas de documentación (ALCOA+).', videoUrl: '', fileUrl: 'https://example.com/alcoa.pdf' },
+      units: [
+        {
+          id: 'u1', title: 'Fundamentos de BPF', description: 'Marco normativo, responsabilidades y cultura de calidad.',
+          lessons: [
+            { id: 'le1', title: 'Introducción a las BPF', description: 'Marco normativo, responsabilidades y trazabilidad.', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', fileUrl: 'https://example.com/modulo-1.pdf' },
+            { id: 'le2', title: 'Documentación y registros (ALCOA+)', description: 'Buenas prácticas de documentación.', videoUrl: '', fileUrl: 'https://example.com/alcoa.pdf' },
+          ],
+        },
+        {
+          id: 'u2', title: 'Higiene y conducta del personal', description: 'Comportamiento en planta y prevención de contaminación.',
+          lessons: [
+            { id: 'le3', title: 'Higiene y lavado de manos', description: 'Lavado de manos y circulación en planta.', videoUrl: '', fileUrl: '' },
+            { id: 'le4', title: 'Vestimenta según clasificación de áreas', description: 'Gowning por clase de área.', videoUrl: '', fileUrl: '' },
+          ],
+        },
       ],
       createdAt: '2026-05-02',
     },
@@ -68,9 +79,14 @@ const seed = () => ({
       modality: 'Híbrido', instructor: 'Ana Torres', status: 'Publicado',
       coverImageUrl: '', introVideoUrl: '',
       attachments: [{ id: 'a1', name: 'Guía de integridad de datos (PDF)', url: 'https://example.com/integridad.pdf' }],
-      modules: [
-        { id: 'm1', title: 'Fundamentos de cromatografía', description: 'Principios de separación y detección.', videoUrl: '', fileUrl: '' },
-        { id: 'm2', title: 'Calibración y verificación del sistema', description: 'SST, curvas y criterios de aceptación.', videoUrl: '', fileUrl: '' },
+      units: [
+        {
+          id: 'u1', title: 'Operación de sistemas HPLC', description: 'De la teoría a la rutina del laboratorio.',
+          lessons: [
+            { id: 'le1', title: 'Fundamentos de cromatografía', description: 'Principios de separación y detección.', videoUrl: '', fileUrl: '' },
+            { id: 'le2', title: 'Calibración y verificación del sistema', description: 'SST, curvas y criterios de aceptación.', videoUrl: '', fileUrl: '' },
+          ],
+        },
       ],
       createdAt: '2026-04-18',
     },
@@ -81,7 +97,12 @@ const seed = () => ({
       modality: 'Presencial', instructor: 'Carlos Ruiz', status: 'Borrador',
       coverImageUrl: '', introVideoUrl: '',
       attachments: [],
-      modules: [{ id: 'm1', title: 'Procedimiento de gowning', description: 'Secuencia de vestimenta por clase de área.', videoUrl: '', fileUrl: '' }],
+      units: [
+        {
+          id: 'u1', title: 'Vestimenta en áreas limpias', description: 'Procedimientos de ingreso y gowning.',
+          lessons: [{ id: 'le1', title: 'Procedimiento de gowning', description: 'Secuencia de vestimenta por clase de área.', videoUrl: '', fileUrl: '' }],
+        },
+      ],
       createdAt: '2026-06-10',
     },
   ],
@@ -92,6 +113,11 @@ const seed = () => ({
       platform: 'zoom', link: 'https://zoom.us/j/98217341234',
       videoUrl: '', imageUrl: '',
       materials: [{ id: 'mat1', name: 'Agenda de la cohorte (PDF)', url: 'https://example.com/agenda.pdf' }],
+      agenda: [
+        { id: 'ag1', title: 'Bienvenida y presentación del programa', description: 'Objetivos, cronograma y modalidad de evaluación.', durationMin: 20 },
+        { id: 'ag2', title: 'BPF en la práctica diaria', description: 'Casos reales de la planta y errores frecuentes.', durationMin: 50 },
+        { id: 'ag3', title: 'Preguntas y cierre', description: '', durationMin: 20 },
+      ],
       date: '2026-07-14', time: '10:00', durationMin: 90, host: 'Lucía Fernández',
       attendees: ['t1', 't2', 't4'], status: 'Programado',
     },
@@ -101,6 +127,10 @@ const seed = () => ({
       platform: 'meet', link: 'https://meet.google.com/abc-defg-hij',
       videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', imageUrl: '',
       materials: [],
+      agenda: [
+        { id: 'ag1', title: 'ALCOA+ aplicado al laboratorio', description: 'Principios y ejemplos en registros analíticos.', durationMin: 30 },
+        { id: 'ag2', title: 'Hallazgos frecuentes en inspecciones', description: 'Qué miran ANMAT y FDA.', durationMin: 30 },
+      ],
       date: '2026-07-21', time: '14:00', durationMin: 60, host: 'Ana Torres',
       attendees: ['t1', 't2'], status: 'Programado',
     },
@@ -286,6 +316,36 @@ const seed = () => ({
       ],
     },
   ],
+  exams: [
+    {
+      id: 'ex1', courseId: 'c1', title: 'Examen final — BPF para personal de planta',
+      description: 'Evaluación final del curso: preguntas de opción múltiple (corrección automática) y una pregunta abierta (corrección manual del instructor).',
+      passScore: 70,
+      questions: [
+        {
+          id: 'q1', type: 'multiple', points: 30,
+          text: '¿Cuándo debe lavarse las manos el personal?',
+          options: ['Solo al inicio del turno', 'Cada vez que ingresa al área productiva', 'Una vez por semana'], correct: 1,
+        },
+        {
+          id: 'q2', type: 'multiple', points: 30,
+          text: '¿Qué significa la sigla ALCOA en integridad de datos?',
+          options: ['Atribuible, Legible, Contemporáneo, Original, Exacto', 'Auditable, Limpio, Completo, Ordenado, Aprobado', 'Analítico, Lógico, Certero, Objetivo, Auténtico'], correct: 0,
+        },
+        {
+          id: 'q3', type: 'abierta', points: 40,
+          text: 'Describí qué harías ante una desviación durante la elaboración de un lote.',
+        },
+      ],
+      attempts: [
+        {
+          id: 'at1', talentId: 't2', submittedAt: '2026-07-01',
+          answers: { q1: 1, q2: 0, q3: 'Detendría la tarea, registraría la desviación e informaría de inmediato al supervisor y a Garantía de Calidad para evaluar el impacto sobre el lote.' },
+          autoScore: 60, manualScores: {}, status: 'Pendiente de corrección', finalScore: null, passed: null,
+        },
+      ],
+    },
+  ],
   reviews: [
     {
       id: 'r1', courseId: 'c1', talentId: 't3', rating: 5,
@@ -400,6 +460,7 @@ export function StoreProvider({ children }) {
     locations: makeCrud('locations'),
     reviews: makeCrud('reviews'),
     courseQuestions: makeCrud('courseQuestions'),
+    exams: makeCrud('exams'),
     remoteStatus,
     reset: () => setData(seed()),
     talentById: (id) => data.talents.find((t) => t.id === id),

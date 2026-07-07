@@ -43,7 +43,7 @@ export default function Trainer() {
   const upcomingCount = mySeminars.filter((s) => s.status === 'Programado' || s.status === 'En vivo').length
 
   const submitCourse = (payload) => {
-    if (modal.mode === 'create') courses.add({ ...payload, createdAt: new Date().toISOString().slice(0, 10) })
+    if (modal.mode === 'create') courses.add({ ...payload, units: [], createdAt: new Date().toISOString().slice(0, 10) })
     else courses.update(modal.item.id, payload)
     setModal(null)
   }

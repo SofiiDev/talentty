@@ -76,6 +76,17 @@ export function SeminarCard({ seminar, onEdit, onDelete }) {
             {seminar.host && <span className="inline-flex items-center gap-1.5"><Mic className="h-4 w-4" /> {seminar.host}</span>}
           </p>
           {seminar.description && <p className="mt-1.5 text-sm text-slate-500">{seminar.description}</p>}
+          {(seminar.agenda?.length || 0) > 0 && (
+            <ol className="mt-2.5 space-y-0.5 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
+              {seminar.agenda.slice(0, 3).map((u, i) => (
+                <li key={u.id} className="flex items-center gap-2">
+                  <span className="truncate">{i + 1}. {u.title}</span>
+                  {u.durationMin > 0 && <span className="ml-auto shrink-0 text-slate-400">{u.durationMin} min</span>}
+                </li>
+              ))}
+              {seminar.agenda.length > 3 && <li className="text-slate-500">+{seminar.agenda.length - 3} unidades más</li>}
+            </ol>
+          )}
           {course && (
             <p className="mt-1 text-xs text-slate-500">Vinculado al curso: <span className="font-medium text-slate-600">{course.title}</span></p>
           )}

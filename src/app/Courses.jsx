@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText, Eye, Star, Search } from 'lucide-react'
+import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText, Eye, Star, Search, PenSquare } from 'lucide-react'
+import { courseLessons } from '../lib/course.js'
 import { useStore } from '../store.jsx'
 import {
   ConfirmDelete, Button, Badge, EmptyState, PageHeader, IconEdit, IconTrash, inputCls,
@@ -58,18 +59,19 @@ export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, on
         <span className="inline-flex items-center gap-1"><MonitorSmartphone className="h-3.5 w-3.5" /> {course.modality}</span>
       </div>
       <div className="mt-2 inline-flex items-center gap-1 text-xs text-slate-500">
-        <User className="h-3.5 w-3.5" /> {course.instructor || 'Sin instructor asignado'} · {course.modules.length} módulos · {enrolledCount} inscriptos
+        <User className="h-3.5 w-3.5" /> {course.instructor || 'Sin instructor asignado'} · {(course.units || []).length} unidades · {courseLessons(course).length} lecciones · {enrolledCount} inscriptos
       </div>
-      {course.modules.length > 0 && (
+      {(course.units || []).length > 0 && (
         <ul className="mt-3 space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-          {course.modules.slice(0, 3).map((m, i) => (
-            <li key={m.id} className="flex items-center gap-1.5">
-              <span className="truncate">{i + 1}. {m.title}</span>
-              {m.videoUrl && <PlayCircle className="h-3 w-3 shrink-0 text-sky-500" />}
-              {m.fileUrl && <FileText className="h-3 w-3 shrink-0 text-amber-500" />}
+          {course.units.slice(0, 3).map((u, i) => (
+            <li key={u.id} className="flex items-center gap-1.5">
+              <span className="truncate">Unidad {i + 1}: {u.title}</span>
+              <span className="ml-auto shrink-0 text-slate-400">{u.lessons.length} lecciones</span>
+              {u.lessons.some((l) => l.videoUrl) && <PlayCircle className="h-3 w-3 shrink-0 text-sky-500" />}
+              {u.lessons.some((l) => l.fileUrl) && <FileText className="h-3 w-3 shrink-0 text-amber-500" />}
             </li>
           ))}
-          {course.modules.length > 3 && <li className="text-slate-500">+{course.modules.length - 3} módulos más</li>}
+          {course.units.length > 3 && <li className="text-slate-500">+{course.units.length - 3} unidades más</li>}
         </ul>
       )}
       {((course.attachments?.length || 0) > 0 || course.introVideoUrl) && (
@@ -89,13 +91,22 @@ export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, on
         </div>
       )}
       <div className="mt-auto flex items-center justify-between gap-1 pt-4">
-        <Link
-          to={`/app/cursos/${course.id}/vista`}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-100"
-          title="Ver el curso como lo ve cada participante"
-        >
-          <Eye className="h-3.5 w-3.5" /> Vista del participante
-        </Link>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Link
+            to={`/app/cursos/${course.id}/editar`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+            title="Editar unidades temáticas, lecciones y exámenes"
+          >
+            <PenSquare className="h-3.5 w-3.5" /> Editar contenido
+          </Link>
+          <Link
+            to={`/app/cursos/${course.id}/vista`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-100"
+            title="Ver el curso como lo ve cada participante"
+          >
+            <Eye className="h-3.5 w-3.5" /> Vista
+          </Link>
+        </div>
         <div className="flex items-center gap-1">
           <button onClick={onEdit} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
           <button onClick={onDelete} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
@@ -146,7 +157,7 @@ export default function Courses() {
   }, [data.courses, filter, query, sort, ratings])
 
   const submit = (payload) => {
-    if (modal.mode === 'create') courses.add({ ...payload, createdAt: new Date().toISOString().slice(0, 10) })
+    if (modal.mode === 'create') courses.add({ ...payload, units: [], createdAt: new Date().toISOString().slice(0, 10) })
     else courses.update(modal.item.id, payload)
     setModal(null)
   }

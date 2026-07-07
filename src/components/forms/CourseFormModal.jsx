@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trash2, Plus, Video, FileText } from 'lucide-react'
+import { Trash2, Plus, FileText, LayoutList } from 'lucide-react'
 import { Modal, Button, Field, inputCls } from '../ui.jsx'
 
 export const categories = ['Calidad', 'Laboratorio', 'Producción', 'Regulatorio', 'Desarrollo', 'Datos', 'Liderazgo', 'Idiomas', 'Otro']
@@ -12,41 +12,22 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 const blank = {
   title: '', description: '', category: 'Calidad', level: 'Inicial',
   durationHours: 8, modality: 'Online en vivo', instructor: '', status: 'Borrador',
-  coverImageUrl: '', introVideoUrl: '', attachments: [], modules: [],
+  coverImageUrl: '', introVideoUrl: '', attachments: [],
 }
 
-const blankModule = { title: '', description: '', videoUrl: '', fileUrl: '' }
-
-// Formulario de alta/edición de cursos, compartido entre Cursos y Entrenador.
+// Formulario de alta/edición de los datos básicos del curso, compartido entre
+// Cursos y Entrenador. El contenido (unidades temáticas, lecciones y exámenes)
+// se gestiona en el editor completo del curso.
 // Montar solo cuando está abierto: el estado inicial se toma de `initial` al montar.
 export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
   const [form, setForm] = useState(() => ({
     ...blank,
     ...(initial || {}),
-    modules: (initial?.modules || []).map((m) => ({ ...blankModule, ...m })),
     attachments: (initial?.attachments || []).map((a) => ({ ...a })),
   }))
-  const [newModule, setNewModule] = useState(blankModule)
   const [newFile, setNewFile] = useState({ name: '', url: '' })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
-  const setMod = (k) => (e) => setNewModule((m) => ({ ...m, [k]: e.target.value }))
-
-  const addModule = () => {
-    const title = newModule.title.trim()
-    if (!title) return
-    setForm((f) => ({
-      ...f,
-      modules: [...f.modules, {
-        id: uid(),
-        title,
-        description: newModule.description.trim(),
-        videoUrl: newModule.videoUrl.trim(),
-        fileUrl: newModule.fileUrl.trim(),
-      }],
-    }))
-    setNewModule(blankModule)
-  }
 
   const addFile = () => {
     const name = newFile.name.trim()
@@ -70,7 +51,6 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
       coverImageUrl: form.coverImageUrl.trim(),
       introVideoUrl: form.introVideoUrl.trim(),
       attachments: form.attachments,
-      modules: form.modules,
     })
   }
 
@@ -154,54 +134,11 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
           </div>
         </div>
 
-        {/* Módulos */}
-        <div>
-          <span className="mb-1 block text-sm font-medium text-slate-700">Módulos del curso</span>
-          {form.modules.length > 0 && (
-            <ul className="mb-2 space-y-2">
-              {form.modules.map((m, i) => (
-                <li key={m.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500">{i + 1}.</span>
-                    <span className="flex-1 truncate font-medium">{m.title}</span>
-                    {m.videoUrl && <Video className="h-3.5 w-3.5 text-sky-500" title="Con video" />}
-                    {m.fileUrl && <FileText className="h-3.5 w-3.5 text-amber-500" title="Con archivo" />}
-                    <button
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, modules: f.modules.filter((x) => x.id !== m.id) }))}
-                      className="text-slate-500 hover:text-rose-600"
-                      title="Quitar módulo"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  {m.description && <p className="mt-0.5 pl-5 text-xs text-slate-500">{m.description}</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="space-y-2 rounded-xl border border-slate-200 p-3">
-            <input
-              className={inputCls}
-              value={newModule.title}
-              onChange={setMod('title')}
-              placeholder="Título del módulo. Ej: Módulo 1 — Introducción a las BPF"
-            />
-            <input
-              className={inputCls}
-              value={newModule.description}
-              onChange={setMod('description')}
-              placeholder="Descripción breve del contenido (opcional)"
-            />
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input className={inputCls} type="url" value={newModule.videoUrl} onChange={setMod('videoUrl')} placeholder="Video del módulo (URL, opcional)" />
-              <input className={inputCls} type="url" value={newModule.fileUrl} onChange={setMod('fileUrl')} placeholder="Material PDF (URL, opcional)" />
-              <Button type="button" variant="secondary" onClick={addModule} disabled={!newModule.title.trim()}>
-                <Plus className="h-4 w-4" /> Agregar
-              </Button>
-            </div>
-          </div>
-        </div>
+        <p className="flex items-start gap-2 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          <LayoutList className="mt-0.5 h-4 w-4 shrink-0" />
+          El contenido del curso (unidades temáticas, lecciones y exámenes) se gestiona desde el botón
+          <span className="font-semibold">&nbsp;“Editar contenido”</span>&nbsp;de la tarjeta del curso.
+        </p>
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>

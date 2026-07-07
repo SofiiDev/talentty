@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   Target, BookOpen, Video, TrendingUp,
   Webcam, Menu as MenuIcon, CalendarDays, Gauge,
+  GraduationCap, Users, FileQuestion, Wallet, BarChart3, Layers,
 } from 'lucide-react'
 
 const features = [
@@ -83,6 +84,7 @@ function Nav() {
   const links = [
     ['#producto', 'Producto'],
     ['#como-funciona', 'Cómo funciona'],
+    ['#instructores', 'Dá tu curso'],
     ['#precios', 'Precios'],
     ['#testimonios', 'Clientes'],
   ]
@@ -296,6 +298,75 @@ export default function Landing() {
                 Próximamente: Teams, calendario y recordatorios automáticos
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Dá tu curso o seminario */}
+      <section id="instructores" className="bg-gradient-to-b from-slate-900 to-slate-800 py-24 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-400/10 px-3 py-1 text-xs font-semibold text-brand-300">
+              <GraduationCap className="h-3.5 w-3.5" /> Para especialistas e instructores
+            </span>
+            <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Dá tu curso o seminario en Talentty</h2>
+            <p className="mt-4 text-lg text-slate-300">
+              ¿Sos especialista en tu campo? Ofrecé tus cursos y seminarios profesionales a las empresas que ya
+              capacitan a sus equipos en la plataforma, sin armar infraestructura propia.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                Icon: Users,
+                title: 'Audiencia corporativa lista',
+                text: 'Llegás a equipos completos que ya se capacitan en Talentty: tus alumnos vienen con su empresa, no de a uno.',
+              },
+              {
+                Icon: Layers,
+                title: 'Estructurá por unidades temáticas',
+                text: 'Armá tu curso en unidades y lecciones con video, PDFs y materiales. El editor hace el trabajo pesado por vos.',
+              },
+              {
+                Icon: FileQuestion,
+                title: 'Exámenes con corrección automática',
+                text: 'Creá exámenes de opción múltiple que se corrigen solos y sumá preguntas abiertas con corrección manual cuando importa el criterio.',
+              },
+              {
+                Icon: Video,
+                title: 'Seminarios en vivo sin fricción',
+                text: 'Agendá sesiones con Zoom o Google Meet, gestioná asistentes y compartí el temario y los materiales en un solo lugar.',
+              },
+              {
+                Icon: BarChart3,
+                title: 'Métricas de tus alumnos',
+                text: 'Progreso por lección, resultados de exámenes, reseñas y certificados emitidos: sabés exactamente cómo va cada cohorte.',
+              },
+              {
+                Icon: Wallet,
+                title: 'Monetizá tu conocimiento',
+                text: 'Tu marca, tus contenidos, tus tarifas. Talentty pone la plataforma, la audiencia y la operación.',
+              },
+            ].map((b) => (
+              <div key={b.title} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-400/15 text-brand-300">
+                  <b.Icon className="h-5 w-5" />
+                </span>
+                <h3 className="text-base font-semibold">{b.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">{b.text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link
+              to="/app/entrenador"
+              className="inline-block rounded-xl bg-brand-500 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-500/25 hover:bg-brand-400"
+            >
+              Empezar a dar clases →
+            </Link>
+            <p className="mt-3 text-sm text-slate-400">Probá el estudio del entrenador con la demo, sin registrarte.</p>
           </div>
         </div>
       </section>

@@ -10,7 +10,7 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 
 const blank = {
   title: '', description: '', courseId: '', platform: 'zoom', link: '',
-  videoUrl: '', imageUrl: '', materials: [],
+  videoUrl: '', imageUrl: '', materials: [], agenda: [],
   date: '', time: '', durationMin: 60, host: '', attendees: [], status: 'Programado',
 }
 
@@ -23,8 +23,20 @@ export default function SeminarFormModal({ mode, initial, onClose, onSubmit }) {
     ...(initial || {}),
     attendees: [...(initial?.attendees || [])],
     materials: (initial?.materials || []).map((m) => ({ ...m })),
+    agenda: (initial?.agenda || []).map((a) => ({ ...a })),
   }))
   const [newFile, setNewFile] = useState({ name: '', url: '' })
+  const [newUnit, setNewUnit] = useState({ title: '', description: '', durationMin: 20 })
+
+  const addUnit = () => {
+    const title = newUnit.title.trim()
+    if (!title) return
+    setForm((f) => ({
+      ...f,
+      agenda: [...f.agenda, { id: uid(), title, description: newUnit.description.trim(), durationMin: Number(newUnit.durationMin) || 0 }],
+    }))
+    setNewUnit({ title: '', description: '', durationMin: 20 })
+  }
 
   const addFile = () => {
     const name = newFile.name.trim()
@@ -55,6 +67,7 @@ export default function SeminarFormModal({ mode, initial, onClose, onSubmit }) {
       videoUrl: form.videoUrl.trim(),
       imageUrl: form.imageUrl.trim(),
       materials: form.materials,
+      agenda: form.agenda,
       courseId: form.courseId,
       platform: form.platform,
       link: form.link.trim(),
@@ -152,6 +165,50 @@ export default function SeminarFormModal({ mode, initial, onClose, onSubmit }) {
             {seminarStatuses.map((s) => <option key={s}>{s}</option>)}
           </select>
         </Field>
+
+        <div>
+          <span className="mb-1 block text-sm font-medium text-slate-700">Temario (unidades temáticas)</span>
+          {form.agenda.length > 0 && (
+            <ol className="mb-2 space-y-2">
+              {form.agenda.map((u, i) => (
+                <li key={u.id} className="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  <span className="text-xs font-semibold text-slate-500">{i + 1}.</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{u.title}</span>
+                    {u.description && <span className="block truncate text-xs text-slate-500">{u.description}</span>}
+                  </span>
+                  {u.durationMin > 0 && <span className="shrink-0 text-xs text-slate-500">{u.durationMin} min</span>}
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, agenda: f.agenda.filter((x) => x.id !== u.id) }))}
+                    className="text-slate-500 hover:text-rose-600"
+                    aria-label="Quitar unidad del temario"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+          <div className="space-y-2 rounded-xl border border-slate-200 p-3">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input className={inputCls} value={newUnit.title}
+                onChange={(e) => setNewUnit((u) => ({ ...u, title: e.target.value }))}
+                placeholder="Título de la unidad. Ej: BPF en la práctica diaria" />
+              <input className={`${inputCls} sm:w-32`} type="number" min="5" step="5" value={newUnit.durationMin}
+                onChange={(e) => setNewUnit((u) => ({ ...u, durationMin: e.target.value }))}
+                aria-label="Duración en minutos" placeholder="Min" />
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input className={inputCls} value={newUnit.description}
+                onChange={(e) => setNewUnit((u) => ({ ...u, description: e.target.value }))}
+                placeholder="Descripción breve (opcional)" />
+              <Button type="button" variant="secondary" onClick={addUnit} disabled={!newUnit.title.trim()}>
+                <Plus className="h-4 w-4" /> Agregar
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Video introductorio (URL)" hint="YouTube, Vimeo o video interno (opcional)">
