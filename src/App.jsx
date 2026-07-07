@@ -8,6 +8,9 @@ import Seminars from './app/Seminars.jsx'
 import CareerPlans from './app/CareerPlans.jsx'
 import Tracking from './app/Tracking.jsx'
 import Settings from './app/Settings.jsx'
+import Trainer from './app/Trainer.jsx'
+import Performance from './app/Performance.jsx'
+import CalendarPage from './app/CalendarPage.jsx'
 import { StoreProvider } from './store.jsx'
 
 export default function App() {
@@ -28,6 +31,9 @@ export default function App() {
         <Route path="seminarios" element={<Seminars />} />
         <Route path="planes" element={<CareerPlans />} />
         <Route path="seguimiento" element={<Tracking />} />
+        <Route path="desempeno" element={<Performance />} />
+        <Route path="entrenador" element={<Trainer />} />
+        <Route path="calendario" element={<CalendarPage />} />
         <Route path="configuracion" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

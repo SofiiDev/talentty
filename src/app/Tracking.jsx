@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
@@ -66,7 +67,7 @@ export default function Tracking() {
       <PageHeader
         title="Seguimiento"
         subtitle="Inscripciones y progreso de tu equipo en cada curso."
-        action={<Button onClick={openCreate}>+ Inscribir a un curso</Button>}
+        action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Inscribir a un curso</Button>}
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -101,7 +102,7 @@ export default function Tracking() {
           icon="📈"
           title="No hay inscripciones en esta vista"
           subtitle="Inscribí a las personas de tu equipo en cursos del catálogo para hacer seguimiento de su avance."
-          action={<Button onClick={openCreate}>+ Inscribir a un curso</Button>}
+          action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Inscribir a un curso</Button>}
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">

@@ -101,12 +101,35 @@ const seed = () => ({
     { id: 'e3', talentId: 't3', courseId: 'c2', progress: 100, status: 'Completado', enrolledAt: '2026-04-25' },
     { id: 'e4', talentId: 't4', courseId: 'c1', progress: 10, status: 'En curso', enrolledAt: '2026-06-12' },
   ],
+  evaluations: [
+    {
+      id: 'ev1', talentId: 't1', period: '2026 H1', performance: 4, potential: 4,
+      strengths: 'Gran calidad técnica y ownership de sus entregas.',
+      areas: 'Delegar más y ganar visibilidad con stakeholders.', createdAt: '2026-06-30',
+    },
+    {
+      id: 'ev2', talentId: 't2', period: '2026 H1', performance: 3, potential: 5,
+      strengths: 'Curva de aprendizaje muy rápida, gran actitud.',
+      areas: 'Profundizar en fundamentos de ingeniería de datos.', createdAt: '2026-06-30',
+    },
+    {
+      id: 'ev3', talentId: 't3', period: '2026 H1', performance: 5, potential: 3,
+      strengths: 'Referente del equipo de producto, excelente ejecución.',
+      areas: 'Explorar interés en roles de liderazgo.', createdAt: '2026-06-28',
+    },
+    {
+      id: 'ev4', talentId: 't4', period: '2026 H1', performance: 4, potential: 2,
+      strengths: 'Especialista sólido en backend y arquitectura.',
+      areas: 'Actualizar stack cloud y compartir conocimiento.', createdAt: '2026-06-27',
+    },
+  ],
 })
 
 const load = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    // Los datos guardados con versiones previas pueden no tener todas las colecciones
+    if (raw) return { evaluations: seed().evaluations, ...JSON.parse(raw) }
   } catch { /* datos corruptos: se regeneran */ }
   return seed()
 }
@@ -142,6 +165,7 @@ export function StoreProvider({ children }) {
     seminars: makeCrud('seminars'),
     plans: makeCrud('plans'),
     enrollments: makeCrud('enrollments'),
+    evaluations: makeCrud('evaluations'),
     reset: () => setData(seed()),
     talentById: (id) => data.talents.find((t) => t.id === id),
     courseById: (id) => data.courses.find((c) => c.id === id),

@@ -1,36 +1,40 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import {
+  Target, BookOpen, Video, TrendingUp,
+  Webcam, Menu as MenuIcon, CalendarDays, Gauge,
+} from 'lucide-react'
 
 const features = [
   {
-    icon: '🎯',
+    Icon: Target,
     title: 'Planes de carrera personalizados',
     text: 'Diseñá rutas de crecimiento con hitos medibles para cada persona de tu equipo, alineadas a los objetivos del negocio.',
   },
   {
-    icon: '📚',
+    Icon: BookOpen,
     title: 'Catálogo de cursos propio',
     text: 'Creá y publicá cursos con módulos, niveles y modalidades. Tu academia interna, lista en minutos.',
   },
   {
-    icon: '🎥',
+    Icon: Video,
     title: 'Seminarios en vivo con Zoom y Meet',
     text: 'Programá seminarios profesionales y vinculalos directamente con Zoom o Google Meet. Un clic y todos adentro.',
   },
   {
-    icon: '📈',
+    Icon: TrendingUp,
     title: 'Seguimiento en tiempo real',
     text: 'Visualizá el progreso de cada inscripción, detectá bloqueos y celebrá los cursos completados.',
   },
   {
-    icon: '🧠',
-    title: 'Mapa de skills del equipo',
-    text: 'Conocé las habilidades de tu talento y detectá brechas antes de que se conviertan en un problema.',
+    Icon: Gauge,
+    title: 'Evaluaciones y matriz 9-box',
+    text: 'Medí desempeño y potencial, y visualizá a tu equipo en la matriz de talento que usan las mejores áreas de People.',
   },
   {
-    icon: '📊',
-    title: 'Métricas que importan',
-    text: 'Dashboard ejecutivo con indicadores de upskilling, avance de planes y actividad de formación.',
+    Icon: CalendarDays,
+    title: 'Calendario integrado',
+    text: 'Agenda mensual de formaciones con exportación a Google Calendar, Outlook y Apple Calendar.',
   },
 ]
 
@@ -101,7 +105,7 @@ function Nav() {
           </Link>
         </div>
         <button className="rounded-lg p-2 text-slate-600 md:hidden" onClick={() => setOpen(!open)} aria-label="Menú">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          <MenuIcon className="h-6 w-6" />
         </button>
       </nav>
       {open && (
@@ -220,7 +224,9 @@ export default function Landing() {
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-6 transition-shadow hover:shadow-lg">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">{f.icon}</div>
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                <f.Icon className="h-5 w-5" />
+              </div>
               <h3 className="text-base font-semibold">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.text}</p>
             </div>
@@ -273,14 +279,14 @@ export default function Landing() {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8">
             <div className="space-y-4">
               <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-2xl">🎦</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Video className="h-6 w-6" /></span>
                 <div>
                   <p className="font-semibold">Zoom</p>
                   <p className="text-sm text-slate-500">Seminarios y cohortes en vivo con tu sala de Zoom.</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-2xl">📹</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><Webcam className="h-6 w-6" /></span>
                 <div>
                   <p className="font-semibold">Google Meet</p>
                   <p className="text-sm text-slate-500">Sesiones rápidas y workshops directamente en Meet.</p>

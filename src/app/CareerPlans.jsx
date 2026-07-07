@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
@@ -14,7 +15,7 @@ const planStatuses = ['En curso', 'Pausado', 'Completado']
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 export default function CareerPlans() {
-  const { data, plans, talentById, courseById } = useStore()
+  const { data, plans, enrollments, talentById, courseById } = useStore()
   const [modal, setModal] = useState(null)
   const [toDelete, setToDelete] = useState(null)
   const [form, setForm] = useState(emptyForm)
@@ -55,6 +56,23 @@ export default function CareerPlans() {
     }
     if (modal.mode === 'create') plans.add(payload)
     else plans.update(modal.item.id, payload)
+
+    // Inscribir automáticamente a la persona en los cursos asignados como hitos
+    for (const m of payload.milestones) {
+      if (!m.courseId) continue
+      const exists = data.enrollments.some(
+        (e) => e.talentId === payload.talentId && e.courseId === m.courseId,
+      )
+      if (!exists) {
+        enrollments.add({
+          talentId: payload.talentId,
+          courseId: m.courseId,
+          progress: 0,
+          status: 'En curso',
+          enrolledAt: new Date().toISOString().slice(0, 10),
+        })
+      }
+    }
     setModal(null)
   }
 
@@ -77,7 +95,7 @@ export default function CareerPlans() {
       <PageHeader
         title="Planes de carrera"
         subtitle="Trazá el camino de crecimiento de cada persona con hitos y cursos asociados."
-        action={<Button onClick={openCreate}>+ Crear plan</Button>}
+        action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Crear plan</Button>}
       />
 
       {data.plans.length === 0 ? (
@@ -85,7 +103,7 @@ export default function CareerPlans() {
           icon="🎯"
           title="Todavía no hay planes de carrera"
           subtitle="Definí objetivos de crecimiento con hitos medibles para tu equipo."
-          action={<Button onClick={openCreate}>+ Crear plan</Button>}
+          action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Crear plan</Button>}
         />
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
@@ -186,6 +204,10 @@ export default function CareerPlans() {
 
           <div>
             <span className="mb-1 block text-sm font-medium text-slate-700">Hitos del plan</span>
+            <p className="mb-2 text-xs text-slate-400">
+              Podés asignar cualquier curso del catálogo (incluidos los dados de alta por los entrenadores).
+              Al guardar, la persona queda inscripta automáticamente en los cursos asignados y aparece en Seguimiento.
+            </p>
             {form.milestones.length > 0 && (
               <ul className="mb-2 space-y-2">
                 {form.milestones.map((m) => {

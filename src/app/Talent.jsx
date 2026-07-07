@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
@@ -64,7 +65,7 @@ export default function Talent() {
       <PageHeader
         title="Talento"
         subtitle={`${data.talents.length} profesionales en tu organización`}
-        action={<Button onClick={openCreate}>+ Agregar talento</Button>}
+        action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Agregar talento</Button>}
       />
 
       <div className="mb-4">
@@ -81,7 +82,7 @@ export default function Talent() {
           icon="👥"
           title={query ? 'Sin resultados' : 'Todavía no hay talento cargado'}
           subtitle={query ? 'Probá con otra búsqueda.' : 'Agregá a los profesionales de tu equipo para empezar a gestionar su desarrollo.'}
-          action={!query && <Button onClick={openCreate}>+ Agregar talento</Button>}
+          action={!query && <Button onClick={openCreate}><Plus className="h-4 w-4" /> Agregar talento</Button>}
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">

@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom'
+import { Users, BookOpen, TrendingUp, Target } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import { Badge, Avatar, ProgressBar, PageHeader } from '../components/ui.jsx'
-import { platformMeta } from './Seminars.jsx'
+import { platformMeta } from '../lib/video.jsx'
 
-function Stat({ label, value, sub, icon, to }) {
+function Stat({ label, value, sub, Icon, to }) {
   return (
     <Link to={to} className="rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-500">{label}</p>
-        <span className="text-xl">{icon}</span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+          <Icon className="h-4 w-4" />
+        </span>
       </div>
       <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
       <p className="mt-1 text-xs text-slate-400">{sub}</p>
@@ -43,10 +46,10 @@ export default function Dashboard() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Talento" value={talents.length} sub={`${talents.filter((t) => t.status === 'Activo').length} activos`} icon="👥" to="/app/talento" />
-        <Stat label="Cursos" value={courses.length} sub={`${courses.filter((c) => c.status === 'Publicado').length} publicados`} icon="📚" to="/app/cursos" />
-        <Stat label="Inscripciones activas" value={active.length} sub={`${completed.length} completadas`} icon="📈" to="/app/seguimiento" />
-        <Stat label="Progreso promedio" value={`${avgProgress}%`} sub={`${plans.length} planes de carrera`} icon="🎯" to="/app/planes" />
+        <Stat label="Talento" value={talents.length} sub={`${talents.filter((t) => t.status === 'Activo').length} activos`} Icon={Users} to="/app/talento" />
+        <Stat label="Cursos" value={courses.length} sub={`${courses.filter((c) => c.status === 'Publicado').length} publicados`} Icon={BookOpen} to="/app/cursos" />
+        <Stat label="Inscripciones activas" value={active.length} sub={`${completed.length} completadas`} Icon={TrendingUp} to="/app/seguimiento" />
+        <Stat label="Progreso promedio" value={`${avgProgress}%`} sub={`${plans.length} planes de carrera`} Icon={Target} to="/app/planes" />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -64,7 +67,9 @@ export default function Dashboard() {
                 const meta = platformMeta[s.platform]
                 return (
                   <li key={s.id} className="flex items-center gap-4 py-3">
-                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg ${meta.bg}`}>{meta.icon}</span>
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
+                      <meta.Icon className="h-5 w-5" />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-slate-900">{s.title}</p>
                       <p className="text-xs text-slate-500">{s.date} · {s.time} hs · {meta.name}</p>
