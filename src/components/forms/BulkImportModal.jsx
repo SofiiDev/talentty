@@ -39,6 +39,7 @@ export default function BulkImportModal({ onClose, defaultPlanId = '' }) {
   const [text, setText] = useState('')
   const [functionId, setFunctionId] = useState('')
   const [planId, setPlanId] = useState(defaultPlanId)
+  const [locationId, setLocationId] = useState('')
   const [result, setResult] = useState(null)
 
   const rows = parseCsv(text)
@@ -65,7 +66,7 @@ export default function BulkImportModal({ onClose, defaultPlanId = '' }) {
   }
 
   const doImport = () => {
-    const ids = newRows.map((r) => talents.add(r).id)
+    const ids = newRows.map((r) => talents.add({ ...r, locationId }).id)
     if (functionId) {
       const jf = data.jobFunctions.find((f) => f.id === functionId)
       if (jf) jobFunctions.update(functionId, { members: [...new Set([...jf.members, ...ids])] })
@@ -137,7 +138,13 @@ export default function BulkImportModal({ onClose, defaultPlanId = '' }) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <Field label="Locación (opcional)">
+              <select className={inputCls} value={locationId} onChange={(e) => setLocationId(e.target.value)}>
+                <option value="">— Sin locación —</option>
+                {data.locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+            </Field>
             <Field label="Asignar función (opcional)" hint="Quedan con las capacitaciones requeridas por esa función">
               <select className={inputCls} value={functionId} onChange={(e) => setFunctionId(e.target.value)}>
                 <option value="">— Sin función —</option>

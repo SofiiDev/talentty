@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus, Clock, SignalHigh, MonitorSmartphone, User } from 'lucide-react'
+import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   ConfirmDelete, Button, Badge, EmptyState, PageHeader, IconEdit, IconTrash,
@@ -10,7 +10,11 @@ export const statusTone = { Publicado: 'green', Borrador: 'amber', Archivado: 's
 
 export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow hover:shadow-md">
+      {course.coverImageUrl && (
+        <img src={course.coverImageUrl} alt="" className="h-32 w-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
+      )}
+      <div className="flex flex-1 flex-col p-5">
       <div className="mb-3 flex items-start justify-between gap-2">
         <Badge tone="brand">{course.category}</Badge>
         <Badge tone={statusTone[course.status]}>{course.status}</Badge>
@@ -28,14 +32,35 @@ export function CourseCard({ course, enrolledCount, onEdit, onDelete }) {
       {course.modules.length > 0 && (
         <ul className="mt-3 space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
           {course.modules.slice(0, 3).map((m, i) => (
-            <li key={m.id} className="truncate">{i + 1}. {m.title}</li>
+            <li key={m.id} className="flex items-center gap-1.5">
+              <span className="truncate">{i + 1}. {m.title}</span>
+              {m.videoUrl && <PlayCircle className="h-3 w-3 shrink-0 text-sky-500" />}
+              {m.fileUrl && <FileText className="h-3 w-3 shrink-0 text-amber-500" />}
+            </li>
           ))}
           {course.modules.length > 3 && <li className="text-slate-400">+{course.modules.length - 3} módulos más</li>}
         </ul>
       )}
+      {((course.attachments?.length || 0) > 0 || course.introVideoUrl) && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {course.introVideoUrl && (
+            <a href={course.introVideoUrl} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">
+              <PlayCircle className="h-3.5 w-3.5" /> Video introductorio
+            </a>
+          )}
+          {(course.attachments || []).map((a) => (
+            <a key={a.id} href={a.url} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100">
+              <FileText className="h-3.5 w-3.5" /> {a.name}
+            </a>
+          ))}
+        </div>
+      )}
       <div className="mt-auto flex items-center justify-end gap-1 pt-4">
         <button onClick={onEdit} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
         <button onClick={onDelete} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
+      </div>
       </div>
     </div>
   )

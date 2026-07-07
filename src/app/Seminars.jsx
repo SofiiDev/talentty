@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus, Calendar, Clock, Timer, Mic, CalendarPlus, Download, ExternalLink } from 'lucide-react'
+import { Plus, Calendar, Clock, Timer, Mic, CalendarPlus, Download, ExternalLink, PlayCircle, FileText } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   ConfirmDelete, Button, Badge, EmptyState, PageHeader, Avatar, RowActions,
@@ -74,8 +74,25 @@ export function SeminarCard({ seminar, onEdit, onDelete }) {
             <span>{m.name}</span>
             {seminar.host && <span className="inline-flex items-center gap-1.5"><Mic className="h-4 w-4" /> {seminar.host}</span>}
           </p>
+          {seminar.description && <p className="mt-1.5 text-sm text-slate-500">{seminar.description}</p>}
           {course && (
             <p className="mt-1 text-xs text-slate-400">Vinculado al curso: <span className="font-medium text-slate-600">{course.title}</span></p>
+          )}
+          {(seminar.videoUrl || (seminar.materials?.length || 0) > 0) && (
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {seminar.videoUrl && (
+                <a href={seminar.videoUrl} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">
+                  <PlayCircle className="h-3.5 w-3.5" /> Video introductorio
+                </a>
+              )}
+              {(seminar.materials || []).map((m) => (
+                <a key={m.id} href={m.url} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100">
+                  <FileText className="h-3.5 w-3.5" /> {m.name}
+                </a>
+              ))}
+            </div>
           )}
           {seminar.attendees.length > 0 && (
             <div className="mt-3 flex items-center gap-1">

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import {
   LayoutDashboard, Users, BookOpen, Video, CalendarDays, Target,
-  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu, ClipboardList,
+  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu, ClipboardList, Building2,
 } from 'lucide-react'
 
 const sections = [
@@ -17,6 +17,7 @@ const sections = [
     title: 'Talento',
     items: [
       { to: '/app/talento', label: 'Talento', Icon: Users },
+      { to: '/app/locaciones', label: 'Locaciones', Icon: Building2 },
       { to: '/app/planes', label: 'Planes de carrera', Icon: Target },
       { to: '/app/seguimiento', label: 'Seguimiento', Icon: TrendingUp },
       { to: '/app/desempeno', label: 'Desempeño', Icon: Gauge },

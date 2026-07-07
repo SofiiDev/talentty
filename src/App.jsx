@@ -12,6 +12,7 @@ import Trainer from './app/Trainer.jsx'
 import Performance from './app/Performance.jsx'
 import CalendarPage from './app/CalendarPage.jsx'
 import Training from './app/training/index.jsx'
+import Locations from './app/Locations.jsx'
 import { StoreProvider } from './store.jsx'
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="talento" element={<Talent />} />
+        <Route path="locaciones" element={<Locations />} />
         <Route path="cursos" element={<Courses />} />
         <Route path="seminarios" element={<Seminars />} />
         <Route path="planes" element={<CareerPlans />} />

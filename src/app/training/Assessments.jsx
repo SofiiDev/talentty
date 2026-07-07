@@ -240,7 +240,9 @@ export default function Assessments() {
     const plan = planById(assessment.planId)
     const subject = `Evaluación: ${assessment.title}`
     const body = buildEmailBody(assessment, talent, plan?.title)
-    window.open(`mailto:${talent.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self')
+    // Usa el email de notificaciones si la persona configuró uno
+    const to = talent.notifyEmail || talent.email
+    window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self')
     updateRecipient(assessment, recipient.talentId, { status: 'Enviada', sentAt: today() })
   }
 
@@ -324,7 +326,7 @@ export default function Assessments() {
                             <Avatar name={t?.name} size="sm" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-slate-900">{t?.name || 'Perfil eliminado'}</p>
-                              <p className="truncate text-xs text-slate-400">{t?.email}</p>
+                              <p className="truncate text-xs text-slate-400">{t?.notifyEmail || t?.email}</p>
                             </div>
                             <Badge tone={recipientTone[r.status]}>{r.status}</Badge>
                             {r.score != null && <span className="text-sm font-semibold text-slate-700">{r.score}%</span>}

@@ -8,16 +8,17 @@ import {
 import BulkImportModal from '../components/forms/BulkImportModal.jsx'
 
 const emptyForm = {
-  name: '', email: '', role: '', department: '', level: 'Junior',
-  skills: '', status: 'Activo', joinedAt: '',
+  name: '', email: '', notifyEmail: '', role: '', department: '', level: 'Junior',
+  skills: '', status: 'Activo', joinedAt: '', locationId: '',
 }
 
 const levels = ['Junior', 'Semi Senior', 'Senior', 'Lead', 'Manager']
 const statuses = ['Activo', 'Licencia', 'Inactivo']
 
 export default function Talent() {
-  const { data, talents } = useStore()
+  const { data, talents, locationById } = useStore()
   const [query, setQuery] = useState('')
+  const [locationFilter, setLocationFilter] = useState('')
   const [modal, setModal] = useState(null) // {mode:'create'} | {mode:'edit', item}
   const [toDelete, setToDelete] = useState(null)
   const [form, setForm] = useState(emptyForm)
@@ -27,19 +28,26 @@ export default function Talent() {
     const q = query.toLowerCase()
     return data.talents.filter(
       (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.role.toLowerCase().includes(q) ||
-        t.department.toLowerCase().includes(q) ||
-        t.skills.join(' ').toLowerCase().includes(q),
+        (!locationFilter || t.locationId === locationFilter) &&
+        (t.name.toLowerCase().includes(q) ||
+          t.role.toLowerCase().includes(q) ||
+          t.department.toLowerCase().includes(q) ||
+          t.skills.join(' ').toLowerCase().includes(q)),
     )
-  }, [data.talents, query])
+  }, [data.talents, query, locationFilter])
 
   const openCreate = () => {
     setForm(emptyForm)
     setModal({ mode: 'create' })
   }
   const openEdit = (item) => {
-    setForm({ ...item, skills: item.skills.join(', ') })
+    setForm({
+      ...emptyForm,
+      ...item,
+      notifyEmail: item.notifyEmail || '',
+      locationId: item.locationId || '',
+      skills: item.skills.join(', '),
+    })
     setModal({ mode: 'edit', item })
   }
 
@@ -48,11 +56,13 @@ export default function Talent() {
     const payload = {
       name: form.name.trim(),
       email: form.email.trim(),
+      notifyEmail: form.notifyEmail.trim(),
       role: form.role.trim(),
       department: form.department.trim(),
       level: form.level,
       status: form.status,
       joinedAt: form.joinedAt,
+      locationId: form.locationId,
       skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean),
     }
     if (modal.mode === 'create') talents.add(payload)
@@ -75,13 +85,21 @@ export default function Talent() {
         }
       />
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-3">
         <input
           className={`${inputCls} max-w-sm`}
           placeholder="Buscar por nombre, rol, área o skill…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <select
+          className={`${inputCls} w-auto`}
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+        >
+          <option value="">Todas las locaciones</option>
+          {data.locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+        </select>
       </div>
 
       {filtered.length === 0 ? (
@@ -93,11 +111,12 @@ export default function Talent() {
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[720px] text-left text-sm">
+          <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Profesional</th>
                 <th className="px-5 py-3 font-medium">Rol / Área</th>
+                <th className="px-5 py-3 font-medium">Locación</th>
                 <th className="px-5 py-3 font-medium">Seniority</th>
                 <th className="px-5 py-3 font-medium">Skills</th>
                 <th className="px-5 py-3 font-medium">Estado</th>
@@ -119,6 +138,11 @@ export default function Talent() {
                   <td className="px-5 py-3">
                     <p className="text-slate-700">{t.role}</p>
                     <p className="text-xs text-slate-400">{t.department}</p>
+                  </td>
+                  <td className="px-5 py-3">
+                    {t.locationId && locationById(t.locationId)
+                      ? <Badge tone="blue">{locationById(t.locationId).name}</Badge>
+                      : <span className="text-xs text-slate-400">Sin asignar</span>}
                   </td>
                   <td className="px-5 py-3"><Badge tone="violet">{t.level}</Badge></td>
                   <td className="px-5 py-3">
@@ -149,9 +173,14 @@ export default function Talent() {
           <Field label="Nombre completo">
             <input className={inputCls} required value={form.name} onChange={set('name')} placeholder="Ej: María González" />
           </Field>
-          <Field label="Email">
-            <input className={inputCls} required type="email" value={form.email} onChange={set('email')} placeholder="nombre@empresa.com" />
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Email">
+              <input className={inputCls} required type="email" value={form.email} onChange={set('email')} placeholder="nombre@empresa.com" />
+            </Field>
+            <Field label="Email de notificaciones" hint="Para encuestas, evaluaciones y avisos. Si queda vacío se usa el email principal.">
+              <input className={inputCls} type="email" value={form.notifyEmail} onChange={set('notifyEmail')} placeholder="opcional" />
+            </Field>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Rol">
               <input className={inputCls} required value={form.role} onChange={set('role')} placeholder="Frontend Developer" />
@@ -175,9 +204,17 @@ export default function Talent() {
           <Field label="Skills" hint="Separadas por coma">
             <input className={inputCls} value={form.skills} onChange={set('skills')} placeholder="React, SQL, Liderazgo" />
           </Field>
-          <Field label="Fecha de ingreso">
-            <input className={inputCls} type="date" value={form.joinedAt} onChange={set('joinedAt')} />
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Locación">
+              <select className={inputCls} value={form.locationId} onChange={set('locationId')}>
+                <option value="">— Sin asignar —</option>
+                {data.locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Fecha de ingreso">
+              <input className={inputCls} type="date" value={form.joinedAt} onChange={set('joinedAt')} />
+            </Field>
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>Cancelar</Button>
             <Button type="submit">{modal?.mode === 'create' ? 'Agregar' : 'Guardar cambios'}</Button>

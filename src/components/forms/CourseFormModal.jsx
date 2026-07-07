@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Plus, Video, FileText } from 'lucide-react'
 import { Modal, Button, Field, inputCls } from '../ui.jsx'
 
-export const categories = ['Desarrollo', 'Datos', 'Liderazgo', 'Producto', 'Diseño', 'Idiomas', 'Otro']
+export const categories = ['Calidad', 'Laboratorio', 'Producción', 'Regulatorio', 'Desarrollo', 'Datos', 'Liderazgo', 'Idiomas', 'Otro']
 export const courseLevels = ['Inicial', 'Intermedio', 'Avanzado']
 export const modalities = ['Online en vivo', 'Autogestionado', 'Presencial', 'Híbrido']
 export const courseStatuses = ['Borrador', 'Publicado', 'Archivado']
@@ -10,10 +10,12 @@ export const courseStatuses = ['Borrador', 'Publicado', 'Archivado']
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 const blank = {
-  title: '', description: '', category: 'Desarrollo', level: 'Inicial',
+  title: '', description: '', category: 'Calidad', level: 'Inicial',
   durationHours: 8, modality: 'Online en vivo', instructor: '', status: 'Borrador',
-  modules: [],
+  coverImageUrl: '', introVideoUrl: '', attachments: [], modules: [],
 }
+
+const blankModule = { title: '', description: '', videoUrl: '', fileUrl: '' }
 
 // Formulario de alta/edición de cursos, compartido entre Cursos y Entrenador.
 // Montar solo cuando está abierto: el estado inicial se toma de `initial` al montar.
@@ -21,17 +23,37 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
   const [form, setForm] = useState(() => ({
     ...blank,
     ...(initial || {}),
-    modules: (initial?.modules || []).map((m) => ({ ...m })),
+    modules: (initial?.modules || []).map((m) => ({ ...blankModule, ...m })),
+    attachments: (initial?.attachments || []).map((a) => ({ ...a })),
   }))
-  const [newModule, setNewModule] = useState('')
+  const [newModule, setNewModule] = useState(blankModule)
+  const [newFile, setNewFile] = useState({ name: '', url: '' })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const setMod = (k) => (e) => setNewModule((m) => ({ ...m, [k]: e.target.value }))
 
   const addModule = () => {
-    const title = newModule.trim()
+    const title = newModule.title.trim()
     if (!title) return
-    setForm((f) => ({ ...f, modules: [...f.modules, { id: uid(), title }] }))
-    setNewModule('')
+    setForm((f) => ({
+      ...f,
+      modules: [...f.modules, {
+        id: uid(),
+        title,
+        description: newModule.description.trim(),
+        videoUrl: newModule.videoUrl.trim(),
+        fileUrl: newModule.fileUrl.trim(),
+      }],
+    }))
+    setNewModule(blankModule)
+  }
+
+  const addFile = () => {
+    const name = newFile.name.trim()
+    const url = newFile.url.trim()
+    if (!name || !url) return
+    setForm((f) => ({ ...f, attachments: [...f.attachments, { id: uid(), name, url }] }))
+    setNewFile({ name: '', url: '' })
   }
 
   const submit = (e) => {
@@ -45,6 +67,9 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
       modality: form.modality,
       instructor: form.instructor.trim(),
       status: form.status,
+      coverImageUrl: form.coverImageUrl.trim(),
+      introVideoUrl: form.introVideoUrl.trim(),
+      attachments: form.attachments,
       modules: form.modules,
     })
   }
@@ -53,7 +78,7 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
     <Modal open title={mode === 'create' ? 'Dar de alta un curso' : 'Editar curso'} onClose={onClose} wide>
       <form onSubmit={submit} className="space-y-4">
         <Field label="Título del curso">
-          <input className={inputCls} required value={form.title} onChange={set('title')} placeholder="Ej: React Avanzado" />
+          <input className={inputCls} required value={form.title} onChange={set('title')} placeholder="Ej: BPF para personal de planta" />
         </Field>
         <Field label="Descripción">
           <textarea className={inputCls} rows={2} value={form.description} onChange={set('description')} placeholder="¿Qué van a aprender los participantes?" />
@@ -89,19 +114,30 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
           </Field>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Video introductorio (URL)" hint="YouTube, Vimeo o video interno">
+            <input className={inputCls} type="url" value={form.introVideoUrl} onChange={set('introVideoUrl')} placeholder="https://youtube.com/…" />
+          </Field>
+          <Field label="Imagen de portada (URL)">
+            <input className={inputCls} type="url" value={form.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://…/portada.jpg" />
+          </Field>
+        </div>
+
+        {/* Archivos del curso */}
         <div>
-          <span className="mb-1 block text-sm font-medium text-slate-700">Módulos del curso</span>
-          {form.modules.length > 0 && (
+          <span className="mb-1 block text-sm font-medium text-slate-700">Archivos del curso (PDF, presentaciones…)</span>
+          <p className="mb-2 text-xs text-slate-400">Pegá el enlace al archivo (Drive, Dropbox, intranet o sitio propio).</p>
+          {form.attachments.length > 0 && (
             <ul className="mb-2 space-y-2">
-              {form.modules.map((m, i) => (
-                <li key={m.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                  <span className="text-xs font-semibold text-slate-400">{i + 1}.</span>
-                  <span className="flex-1 truncate">{m.title}</span>
+              {form.attachments.map((a) => (
+                <li key={a.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span className="flex-1 truncate">{a.name}</span>
                   <button
                     type="button"
-                    onClick={() => setForm((f) => ({ ...f, modules: f.modules.filter((x) => x.id !== m.id) }))}
+                    onClick={() => setForm((f) => ({ ...f, attachments: f.attachments.filter((x) => x.id !== a.id) }))}
                     className="text-slate-400 hover:text-rose-600"
-                    title="Quitar módulo"
+                    title="Quitar archivo"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -109,15 +145,61 @@ export default function CourseFormModal({ mode, initial, onClose, onSubmit }) {
               ))}
             </ul>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input className={inputCls} value={newFile.name} onChange={(e) => setNewFile((f) => ({ ...f, name: e.target.value }))} placeholder="Nombre. Ej: POE-001 Higiene (PDF)" />
+            <input className={inputCls} type="url" value={newFile.url} onChange={(e) => setNewFile((f) => ({ ...f, url: e.target.value }))} placeholder="https://…/archivo.pdf" />
+            <Button type="button" variant="secondary" onClick={addFile} disabled={!newFile.name.trim() || !newFile.url.trim()}>
+              <Plus className="h-4 w-4" /> Agregar
+            </Button>
+          </div>
+        </div>
+
+        {/* Módulos */}
+        <div>
+          <span className="mb-1 block text-sm font-medium text-slate-700">Módulos del curso</span>
+          {form.modules.length > 0 && (
+            <ul className="mb-2 space-y-2">
+              {form.modules.map((m, i) => (
+                <li key={m.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-400">{i + 1}.</span>
+                    <span className="flex-1 truncate font-medium">{m.title}</span>
+                    {m.videoUrl && <Video className="h-3.5 w-3.5 text-sky-500" title="Con video" />}
+                    {m.fileUrl && <FileText className="h-3.5 w-3.5 text-amber-500" title="Con archivo" />}
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, modules: f.modules.filter((x) => x.id !== m.id) }))}
+                      className="text-slate-400 hover:text-rose-600"
+                      title="Quitar módulo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {m.description && <p className="mt-0.5 pl-5 text-xs text-slate-500">{m.description}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="space-y-2 rounded-xl border border-slate-200 p-3">
             <input
               className={inputCls}
-              value={newModule}
-              onChange={(e) => setNewModule(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addModule() } }}
-              placeholder="Ej: Módulo 1 — Introducción"
+              value={newModule.title}
+              onChange={setMod('title')}
+              placeholder="Título del módulo. Ej: Módulo 1 — Introducción a las BPF"
             />
-            <Button type="button" variant="secondary" onClick={addModule}>Agregar</Button>
+            <input
+              className={inputCls}
+              value={newModule.description}
+              onChange={setMod('description')}
+              placeholder="Descripción breve del contenido (opcional)"
+            />
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input className={inputCls} type="url" value={newModule.videoUrl} onChange={setMod('videoUrl')} placeholder="Video del módulo (URL, opcional)" />
+              <input className={inputCls} type="url" value={newModule.fileUrl} onChange={setMod('fileUrl')} placeholder="Material PDF (URL, opcional)" />
+              <Button type="button" variant="secondary" onClick={addModule} disabled={!newModule.title.trim()}>
+                <Plus className="h-4 w-4" /> Agregar
+              </Button>
+            </div>
           </div>
         </div>
 
