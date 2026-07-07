@@ -144,6 +144,7 @@ const seed = () => ({
       id: 'ap1', year: 2026, title: 'Plan Anual de Capacitación 2026 — Planta',
       area: 'Toda la planta', responsible: 'Lucía Fernández', status: 'Aprobado',
       frameworkIds: ['fw1', 'fw3'],
+      participantIds: ['t1', 't2', 't3', 't4'],
       notes: 'Revisión trimestral por Garantía de Calidad. Los registros de asistencia y evaluación se archivan en el legajo de capacitación de cada empleado.',
       items: [
         { id: 'i1', code: 'POE-001', title: 'Higiene y conducta del personal', type: 'POE / Procedimiento', frequency: 'Anual', month: 'Marzo', functionIds: ['jf1', 'jf2', 'jf3'], courseId: '', status: 'Completado' },

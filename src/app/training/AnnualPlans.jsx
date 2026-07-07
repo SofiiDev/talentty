@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Plus, ClipboardList, BookOpen } from 'lucide-react'
+import { Plus, ClipboardList, BookOpen, Users, FileDown, Upload, Calendar, Repeat } from 'lucide-react'
 import { useStore } from '../../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
-  EmptyState, ProgressBar, RowActions, IconEdit, IconTrash,
+  EmptyState, ProgressBar, RowActions, IconEdit, IconTrash, Avatar,
 } from '../../components/ui.jsx'
+import { exportPlanPdf } from '../../lib/planPdf.js'
+import BulkImportModal from '../../components/forms/BulkImportModal.jsx'
 
 export const itemTypes = ['POE / Procedimiento', 'Curso', 'Seminario', 'Taller', 'Inducción', 'Lectura dirigida']
 export const frequencies = ['Única', 'Mensual', 'Trimestral', 'Semestral', 'Anual', 'Bienal']
@@ -19,7 +21,7 @@ const itemTone = { Pendiente: 'slate', Programado: 'blue', 'En curso': 'amber', 
 
 const emptyPlan = {
   year: new Date().getFullYear(), title: '', area: '', responsible: '',
-  status: 'Borrador', frameworkIds: [], notes: '',
+  status: 'Borrador', frameworkIds: [], participantIds: [], notes: '',
 }
 
 const emptyItem = {
@@ -29,12 +31,22 @@ const emptyItem = {
 
 function PlanFormModal({ mode, initial, onClose, onSubmit }) {
   const { data } = useStore()
-  const [form, setForm] = useState(() => ({ ...emptyPlan, ...(initial || {}), frameworkIds: [...(initial?.frameworkIds || [])] }))
+  const [form, setForm] = useState(() => ({
+    ...emptyPlan,
+    ...(initial || {}),
+    frameworkIds: [...(initial?.frameworkIds || [])],
+    participantIds: [...(initial?.participantIds || [])],
+  }))
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const toggleFramework = (id) =>
     setForm((f) => ({
       ...f,
       frameworkIds: f.frameworkIds.includes(id) ? f.frameworkIds.filter((x) => x !== id) : [...f.frameworkIds, id],
+    }))
+  const toggleParticipant = (id) =>
+    setForm((f) => ({
+      ...f,
+      participantIds: f.participantIds.includes(id) ? f.participantIds.filter((x) => x !== id) : [...f.participantIds, id],
     }))
 
   const submit = (e) => {
@@ -46,6 +58,7 @@ function PlanFormModal({ mode, initial, onClose, onSubmit }) {
       responsible: form.responsible.trim(),
       status: form.status,
       frameworkIds: form.frameworkIds,
+      participantIds: form.participantIds,
       notes: form.notes.trim(),
     })
   }
@@ -92,6 +105,29 @@ function PlanFormModal({ mode, initial, onClose, onSubmit }) {
               </label>
             ))}
           </div>
+        </div>
+
+        <div>
+          <span className="mb-1 block text-sm font-medium text-slate-700">Personas incluidas en el plan</span>
+          <p className="mb-2 text-xs text-slate-400">También podés sumar personas en bloque con la carga masiva de perfiles.</p>
+          {data.talents.length === 0 ? (
+            <p className="text-sm text-slate-400">Primero agregá talento a tu organización.</p>
+          ) : (
+            <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
+              {data.talents.map((t) => (
+                <label key={t.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-slate-50">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                    checked={form.participantIds.includes(t.id)}
+                    onChange={() => toggleParticipant(t.id)}
+                  />
+                  <span className="truncate text-slate-700">{t.name}</span>
+                  <span className="ml-auto truncate text-xs text-slate-400">{t.role}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         <Field label="Notas / criterios de revisión">
@@ -201,14 +237,143 @@ function ItemFormModal({ mode, initial, onClose, onSubmit }) {
   )
 }
 
+function PeopleModal({ plan, onClose }) {
+  const { data, talentById } = useStore()
+  const participants = (plan.participantIds || []).map(talentById).filter(Boolean)
+  const functionsOf = (talentId) =>
+    data.jobFunctions.filter((jf) => jf.members.includes(talentId)).map((jf) => jf.name)
+
+  return (
+    <Modal open title={`Personas del plan — ${plan.year}`} onClose={onClose} wide>
+      <p className="mb-4 text-sm text-slate-500">
+        {participants.length} persona{participants.length === 1 ? '' : 's'} incluida{participants.length === 1 ? '' : 's'} en <span className="font-medium text-slate-700">{plan.title}</span>
+      </p>
+      {participants.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+          Sin personas asignadas. Editá el plan o usá la carga masiva para incluirlas.
+        </p>
+      ) : (
+        <ul className="max-h-96 divide-y divide-slate-100 overflow-y-auto">
+          {participants.map((t) => {
+            const fns = functionsOf(t.id)
+            return (
+              <li key={t.id} className="flex items-center gap-3 py-3">
+                <Avatar name={t.name} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900">{t.name}</p>
+                  <p className="truncate text-xs text-slate-500">{t.role}{t.department && ` · ${t.department}`}</p>
+                </div>
+                <div className="flex max-w-56 flex-wrap justify-end gap-1">
+                  {fns.length === 0 ? <span className="text-xs text-slate-400">Sin función asignada</span> : fns.map((f) => <Badge key={f} tone="violet">{f}</Badge>)}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      <div className="mt-5 flex justify-end">
+        <Button variant="secondary" onClick={onClose}>Cerrar</Button>
+      </div>
+    </Modal>
+  )
+}
+
+function ItemDetailModal({ plan, item, onClose }) {
+  const { data, talentById, courseById } = useStore()
+  const functions = item.functionIds.map((id) => data.jobFunctions.find((f) => f.id === id)).filter(Boolean)
+  const course = item.courseId ? courseById(item.courseId) : null
+
+  // Personas alcanzadas: miembros de las funciones del ítem; si no tiene funciones,
+  // aplica a todas las personas incluidas en el plan
+  const covered = functions.length
+    ? [...new Set(functions.flatMap((f) => f.members))].map(talentById).filter(Boolean)
+    : (plan.participantIds || []).map(talentById).filter(Boolean)
+
+  return (
+    <Modal open title={item.title} onClose={onClose} wide>
+      <div className="flex flex-wrap items-center gap-2">
+        {item.code && <Badge tone="slate">{item.code}</Badge>}
+        <Badge tone="brand">{item.type}</Badge>
+        <Badge tone={itemTone[item.status]}>{item.status}</Badge>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-slate-50 p-3">
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><Repeat className="h-3.5 w-3.5" /> Frecuencia</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-800">{item.frequency}</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-3">
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><Calendar className="h-3.5 w-3.5" /> Mes planificado</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-800">{item.month}</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-3">
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400"><BookOpen className="h-3.5 w-3.5" /> Curso vinculado</p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">{course ? course.title : '—'}</p>
+        </div>
+      </div>
+
+      {functions.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Funciones alcanzadas</p>
+          <div className="flex flex-wrap gap-1.5">
+            {functions.map((f) => <Badge key={f.id} tone="violet">{f.name}</Badge>)}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4">
+        <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <Users className="h-3.5 w-3.5" /> Personas alcanzadas ({covered.length})
+          {!functions.length && <span className="normal-case text-slate-400">— todas las del plan</span>}
+        </p>
+        {covered.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400">
+            Nadie alcanzado todavía: asigná funciones al ítem o personas al plan.
+          </p>
+        ) : (
+          <ul className="max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-100">
+            {covered.map((t) => (
+              <li key={t.id} className="flex items-center gap-3 px-3 py-2">
+                <Avatar name={t.name} size="sm" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900">{t.name}</p>
+                  <p className="truncate text-xs text-slate-500">{t.role}{t.department && ` · ${t.department}`}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="mt-5 flex justify-end">
+        <Button variant="secondary" onClick={onClose}>Cerrar</Button>
+      </div>
+    </Modal>
+  )
+}
+
 export default function AnnualPlans() {
-  const { data, annualPlans, courseById } = useStore()
+  const { data, annualPlans, courseById, talentById } = useStore()
   const [planModal, setPlanModal] = useState(null) // {mode, item?}
   const [itemModal, setItemModal] = useState(null) // {mode, plan, item?}
   const [toDelete, setToDelete] = useState(null) // {kind:'plan'|'item', plan, item?}
+  const [peopleFor, setPeopleFor] = useState(null) // plan
+  const [detail, setDetail] = useState(null) // {plan, item}
+  const [importOpen, setImportOpen] = useState(false)
 
   const frameworkById = (id) => data.frameworks.find((f) => f.id === id)
   const functionById = (id) => data.jobFunctions.find((f) => f.id === id)
+
+  const exportPdf = (plan) => {
+    const ok = exportPlanPdf({
+      plan,
+      frameworks: plan.frameworkIds.map(frameworkById).filter(Boolean),
+      participants: (plan.participantIds || []).map(talentById).filter(Boolean),
+      functionNameById: (id) => functionById(id)?.name,
+      courseTitleById: (id) => courseById(id)?.title,
+    })
+    if (!ok) alert('El navegador bloqueó la ventana de exportación. Permití ventanas emergentes para este sitio.')
+  }
 
   const submitPlan = (payload) => {
     if (planModal.mode === 'create') annualPlans.add({ ...payload, items: [] })
@@ -232,7 +397,8 @@ export default function AnnualPlans() {
 
   return (
     <div>
-      <div className="mb-5 flex justify-end">
+      <div className="mb-5 flex flex-wrap justify-end gap-2">
+        <Button variant="secondary" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" /> Carga masiva de perfiles</Button>
         <Button onClick={() => setPlanModal({ mode: 'create' })}><Plus className="h-4 w-4" /> Nuevo plan anual</Button>
       </div>
 
@@ -261,23 +427,37 @@ export default function AnnualPlans() {
                       {plan.area && <>Área: <span className="font-medium text-slate-700">{plan.area}</span> · </>}
                       {plan.responsible && <>Responsable: <span className="font-medium text-slate-700">{plan.responsible}</span></>}
                     </p>
-                    {plan.frameworkIds.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {plan.frameworkIds.map((id) => {
-                          const fw = frameworkById(id)
-                          return fw ? <Badge key={id} tone="brand">{fw.code}</Badge> : null
-                        })}
-                      </div>
-                    )}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {plan.frameworkIds.map((id) => {
+                        const fw = frameworkById(id)
+                        return fw ? <Badge key={id} tone="brand">{fw.code}</Badge> : null
+                      })}
+                      <button
+                        onClick={() => setPeopleFor(plan)}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700 hover:bg-violet-100"
+                        title="Ver personas incluidas en el plan"
+                      >
+                        <Users className="h-3.5 w-3.5" /> {(plan.participantIds || []).length} personas
+                      </button>
+                    </div>
                   </div>
                   <div className="w-44">
                     <p className="mb-1 text-right text-xs text-slate-500">{done} de {plan.items.length} completados</p>
                     <ProgressBar value={pct} />
                   </div>
-                  <RowActions
-                    onEdit={() => setPlanModal({ mode: 'edit', item: plan })}
-                    onDelete={() => setToDelete({ kind: 'plan', plan })}
-                  />
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => exportPdf(plan)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      title="Exportar PDF para presentar ante autoridad (incluye firmas Preparó / Revisó / Autorizó)"
+                    >
+                      <FileDown className="h-4 w-4" /> Exportar PDF
+                    </button>
+                    <RowActions
+                      onEdit={() => setPlanModal({ mode: 'edit', item: plan })}
+                      onDelete={() => setToDelete({ kind: 'plan', plan })}
+                    />
+                  </div>
                 </div>
 
                 <div className="p-5">
@@ -304,7 +484,12 @@ export default function AnnualPlans() {
                           {plan.items.map((item) => {
                             const course = item.courseId ? courseById(item.courseId) : null
                             return (
-                              <tr key={item.id} className="hover:bg-slate-50/60">
+                              <tr
+                                key={item.id}
+                                onClick={() => setDetail({ plan, item })}
+                                className="cursor-pointer hover:bg-slate-50/60"
+                                title="Ver detalle y personas alcanzadas"
+                              >
                                 <td className="px-3 py-2.5 font-mono text-xs text-slate-500">{item.code || '—'}</td>
                                 <td className="px-3 py-2.5">
                                   <p className="font-medium text-slate-800">{item.title}</p>
@@ -326,7 +511,7 @@ export default function AnnualPlans() {
                                     })}
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5">
+                                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                                   <select
                                     value={item.status}
                                     onChange={(e) => setItemStatus(plan, item.id, e.target.value)}
@@ -337,7 +522,7 @@ export default function AnnualPlans() {
                                     {itemStatuses.map((s) => <option key={s}>{s}</option>)}
                                   </select>
                                 </td>
-                                <td className="px-3 py-2.5">
+                                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                                   <div className="flex items-center justify-end gap-1">
                                     <button onClick={() => setItemModal({ mode: 'edit', plan, item })} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600" title="Editar"><IconEdit /></button>
                                     <button onClick={() => setToDelete({ kind: 'item', plan, item })} className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Eliminar"><IconTrash /></button>
@@ -370,6 +555,9 @@ export default function AnnualPlans() {
       {itemModal && (
         <ItemFormModal mode={itemModal.mode} initial={itemModal.item} onClose={() => setItemModal(null)} onSubmit={submitItem} />
       )}
+      {peopleFor && <PeopleModal plan={peopleFor} onClose={() => setPeopleFor(null)} />}
+      {detail && <ItemDetailModal plan={detail.plan} item={detail.item} onClose={() => setDetail(null)} />}
+      {importOpen && <BulkImportModal onClose={() => setImportOpen(false)} defaultPlanId={data.annualPlans[0]?.id || ''} />}
 
       <ConfirmDelete
         open={!!toDelete}

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Upload } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
   EmptyState, PageHeader, Avatar, RowActions,
 } from '../components/ui.jsx'
+import BulkImportModal from '../components/forms/BulkImportModal.jsx'
 
 const emptyForm = {
   name: '', email: '', role: '', department: '', level: 'Junior',
@@ -20,6 +21,7 @@ export default function Talent() {
   const [modal, setModal] = useState(null) // {mode:'create'} | {mode:'edit', item}
   const [toDelete, setToDelete] = useState(null)
   const [form, setForm] = useState(emptyForm)
+  const [importOpen, setImportOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
@@ -65,7 +67,12 @@ export default function Talent() {
       <PageHeader
         title="Talento"
         subtitle={`${data.talents.length} profesionales en tu organización`}
-        action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Agregar talento</Button>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" /> Carga masiva</Button>
+            <Button onClick={openCreate}><Plus className="h-4 w-4" /> Agregar talento</Button>
+          </div>
+        }
       />
 
       <div className="mb-4">
@@ -177,6 +184,8 @@ export default function Talent() {
           </div>
         </form>
       </Modal>
+
+      {importOpen && <BulkImportModal onClose={() => setImportOpen(false)} />}
 
       <ConfirmDelete
         open={!!toDelete}
