@@ -28,7 +28,9 @@ export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, on
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow hover:shadow-md">
       {course.coverImageUrl && (
-        <img src={course.coverImageUrl} alt="" className="h-32 w-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
+        <Link to={`/app/cursos/${course.id}/editar`} title="Abrir el editor de instructor">
+          <img src={course.coverImageUrl} alt="" className="h-32 w-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
+        </Link>
       )}
       <div className="flex flex-1 flex-col p-5">
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -50,7 +52,15 @@ export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, on
           )}
         </div>
       </div>
-      <h3 className="font-semibold text-slate-900">{course.title}</h3>
+      <h3>
+        <Link
+          to={`/app/cursos/${course.id}/editar`}
+          className="font-semibold text-slate-900 hover:text-brand-700 hover:underline"
+          title="Abrir el editor de instructor"
+        >
+          {course.title}
+        </Link>
+      </h3>
       {rating && <div className="mt-1"><RatingStars value={rating.avg} count={rating.count} /></div>}
       <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">{course.description}</p>
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-500">

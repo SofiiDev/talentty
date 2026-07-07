@@ -9,7 +9,7 @@ import SeminarFormModal from '../components/forms/SeminarFormModal.jsx'
 import { platformMeta } from '../lib/video.jsx'
 import { googleCalendarUrl, downloadIcs } from '../lib/calendar.js'
 
-export const seminarStatusTone = { Programado: 'blue', 'En vivo': 'green', Finalizado: 'slate', Cancelado: 'rose' }
+export const seminarStatusTone = { Borrador: 'amber', Programado: 'blue', 'En vivo': 'green', Finalizado: 'slate', Cancelado: 'rose' }
 
 export function AddToCalendar({ seminar }) {
   const [open, setOpen] = useState(false)
@@ -65,7 +65,13 @@ export function SeminarCard({ seminar, onEdit, onDelete }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-slate-900">{seminar.title}</h3>
+            <Link
+              to={`/app/seminarios/${seminar.id}/editar`}
+              className="font-semibold text-slate-900 hover:text-brand-700 hover:underline"
+              title="Abrir el editor de instructor"
+            >
+              {seminar.title}
+            </Link>
             <Badge tone={seminarStatusTone[seminar.status]}>{seminar.status}</Badge>
           </div>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">

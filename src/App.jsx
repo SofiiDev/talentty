@@ -16,6 +16,7 @@ import Locations from './app/Locations.jsx'
 import CourseView from './app/CourseView.jsx'
 import CourseEditor from './app/CourseEditor.jsx'
 import SeminarView from './app/SeminarView.jsx'
+import SeminarEditor from './app/SeminarEditor.jsx'
 import { StoreProvider } from './store.jsx'
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="cursos/:courseId/editar" element={<CourseEditor />} />
         <Route path="seminarios" element={<Seminars />} />
         <Route path="seminarios/:seminarId/vista" element={<SeminarView />} />
+        <Route path="seminarios/:seminarId/editar" element={<SeminarEditor />} />
         <Route path="planes" element={<CareerPlans />} />
         <Route path="seguimiento" element={<Tracking />} />
         <Route path="desempeno" element={<Performance />} />

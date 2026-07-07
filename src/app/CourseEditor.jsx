@@ -3,14 +3,50 @@ import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, Plus, LayoutList, FileQuestion, CheckSquare, Trash2,
   PlayCircle, FileText, GripVertical, Eye, Pencil, ChevronUp, ChevronDown,
+  Info, Save, Rocket, Archive, Undo2, CheckCircle2,
 } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls, Avatar, EmptyState,
 } from '../components/ui.jsx'
 import { examTotalPoints, finalScoreOf } from '../lib/course.js'
+import { CourseFields, initCourseForm, buildCoursePayload } from '../components/forms/CourseFormModal.jsx'
+import { statusTone } from './Courses.jsx'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
+
+/* ---------- Información básica ---------- */
+
+function InfoTab({ course, updateCourse }) {
+  const [form, setForm] = useState(() => initCourseForm(course))
+  const [savedAt, setSavedAt] = useState(null)
+
+  const dirty = JSON.stringify(buildCoursePayload(form)) !== JSON.stringify(buildCoursePayload(initCourseForm(course)))
+
+  const save = (e) => {
+    e?.preventDefault()
+    updateCourse(buildCoursePayload(form))
+    setSavedAt(Date.now())
+    setTimeout(() => setSavedAt(null), 2500)
+  }
+
+  return (
+    <form onSubmit={save} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+      <CourseFields form={form} setForm={setForm} showStatus={false} />
+      <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+        {dirty && <Badge tone="amber">Cambios sin guardar</Badge>}
+        {savedAt && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Guardado
+          </span>
+        )}
+        <Button type="submit" disabled={!dirty || !form.title.trim()}>
+          <Save className="h-4 w-4" /> Guardar cambios
+        </Button>
+      </div>
+    </form>
+  )
+}
 
 /* ---------- Unidades y lecciones ---------- */
 
@@ -514,6 +550,7 @@ export default function CourseEditor() {
     .reduce((a, e) => a + (e.attempts || []).filter((at) => at.status === 'Pendiente de corrección').length, 0)
 
   const tabs = [
+    { key: 'informacion', label: 'Información', Icon: Info },
     { key: 'contenido', label: 'Contenido', Icon: LayoutList },
     { key: 'examenes', label: 'Exámenes', Icon: FileQuestion },
     { key: 'correcciones', label: pendingCount > 0 ? `Correcciones (${pendingCount})` : 'Correcciones', Icon: CheckSquare },
@@ -530,10 +567,32 @@ export default function CourseEditor() {
         </Link>
       </div>
 
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Editor de curso</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">{course.title}</h1>
-        <p className="mt-1 text-sm text-slate-500">{course.category} · {course.level} · {course.instructor || 'Sin instructor'}</p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Editor de curso · Vista de instructor</p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900">{course.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge tone={statusTone[course.status] || 'slate'}>{course.status}</Badge>
+            <span className="text-sm text-slate-500">{course.category} · {course.level} · {course.instructor || 'Sin instructor'}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {course.status !== 'Publicado' && (
+            <Button onClick={() => updateCourse({ status: 'Publicado' })}>
+              <Rocket className="h-4 w-4" /> Publicar curso
+            </Button>
+          )}
+          {course.status === 'Publicado' && (
+            <Button variant="secondary" onClick={() => updateCourse({ status: 'Borrador' })}>
+              <Undo2 className="h-4 w-4" /> Pasar a borrador
+            </Button>
+          )}
+          {course.status !== 'Archivado' && (
+            <Button variant="ghost" onClick={() => updateCourse({ status: 'Archivado' })}>
+              <Archive className="h-4 w-4" /> Archivar
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
@@ -550,6 +609,7 @@ export default function CourseEditor() {
         ))}
       </div>
 
+      {tab === 'informacion' && <InfoTab key={course.id + course.status} course={course} updateCourse={updateCourse} />}
       {tab === 'contenido' && <ContentTab course={course} updateCourse={updateCourse} />}
       {tab === 'examenes' && <ExamsTab course={course} />}
       {tab === 'correcciones' && <GradingTab course={course} />}
