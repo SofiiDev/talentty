@@ -20,8 +20,9 @@ export default function Trainer() {
     const names = new Set()
     data.courses.forEach((c) => c.instructor && names.add(c.instructor))
     data.seminars.forEach((s) => s.host && names.add(s.host))
+    ;(data.instructors || []).forEach((i) => names.add(i.name))
     return [ALL, ...[...names].sort()]
-  }, [data.courses, data.seminars])
+  }, [data.courses, data.seminars, data.instructors])
 
   const myCourses = useMemo(
     () => data.courses.filter((c) => trainer === ALL || c.instructor === trainer),

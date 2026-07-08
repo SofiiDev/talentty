@@ -17,6 +17,7 @@ import CourseView from './app/CourseView.jsx'
 import CourseEditor from './app/CourseEditor.jsx'
 import SeminarView from './app/SeminarView.jsx'
 import SeminarEditor from './app/SeminarEditor.jsx'
+import Instructors from './app/Instructors.jsx'
 import { StoreProvider } from './store.jsx'
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="seguimiento" element={<Tracking />} />
         <Route path="desempeno" element={<Performance />} />
         <Route path="entrenador" element={<Trainer />} />
+        <Route path="instructores" element={<Instructors />} />
         <Route path="capacitacion" element={<Training />} />
         <Route path="calendario" element={<CalendarPage />} />
         <Route path="configuracion" element={<Settings />} />

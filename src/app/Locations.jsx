@@ -5,6 +5,7 @@ import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
   EmptyState, PageHeader, Avatar, RowActions,
 } from '../components/ui.jsx'
+import CreatableSelect from '../components/CreatableSelect.jsx'
 
 const locationTypes = ['Planta productiva', 'Laboratorio de control', 'Depósito / Logística', 'Oficina', 'Centro de distribución', 'Otro']
 const locationStatuses = ['Operativa', 'En obra', 'Inactiva']
@@ -202,10 +203,15 @@ export default function Locations() {
             <input className={inputCls} required value={form.name} onChange={set('name')} placeholder="Ej: Planta Central" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Tipo">
-              <select className={inputCls} value={form.type} onChange={set('type')}>
-                {locationTypes.map((t) => <option key={t}>{t}</option>)}
-              </select>
+            <Field label="Tipo" as="div">
+              <CreatableSelect
+                listKey="locationTypes"
+                baseOptions={locationTypes}
+                value={form.type}
+                onChange={(v) => setForm((f) => ({ ...f, type: v }))}
+                ariaLabel="Tipo de locación"
+                createLabel="Crear tipo…"
+              />
             </Field>
             <Field label="Estado">
               <select className={inputCls} value={form.status} onChange={set('status')}>

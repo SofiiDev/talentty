@@ -3,6 +3,8 @@ import { Trash2, Plus, FileText, LayoutList } from 'lucide-react'
 import { Modal, Button, Field, inputCls } from '../ui.jsx'
 import RichTextEditor from '../RichTextEditor.jsx'
 import { VideoInput } from '../VideoPlayer.jsx'
+import CreatableSelect from '../CreatableSelect.jsx'
+import InstructorPicker from '../InstructorPicker.jsx'
 
 export const categories = ['Calidad', 'Laboratorio', 'Producción', 'Regulatorio', 'Desarrollo', 'Datos', 'Liderazgo', 'Idiomas', 'Otro']
 export const courseLevels = ['Inicial', 'Intermedio', 'Avanzado']
@@ -64,15 +66,25 @@ export function CourseFields({ form, setForm, showStatus = true }) {
         />
       </Field>
       <div className={`grid grid-cols-2 gap-4 ${showStatus ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
-        <Field label="Categoría">
-          <select className={inputCls} value={form.category} onChange={set('category')}>
-            {categories.map((c) => <option key={c}>{c}</option>)}
-          </select>
+        <Field label="Categoría" as="div">
+          <CreatableSelect
+            listKey="courseCategories"
+            baseOptions={categories}
+            value={form.category}
+            onChange={(v) => setForm((f) => ({ ...f, category: v }))}
+            ariaLabel="Categoría"
+            createLabel="Crear categoría…"
+          />
         </Field>
-        <Field label="Nivel">
-          <select className={inputCls} value={form.level} onChange={set('level')}>
-            {courseLevels.map((l) => <option key={l}>{l}</option>)}
-          </select>
+        <Field label="Nivel" as="div">
+          <CreatableSelect
+            listKey="courseLevels"
+            baseOptions={courseLevels}
+            value={form.level}
+            onChange={(v) => setForm((f) => ({ ...f, level: v }))}
+            ariaLabel="Nivel"
+            createLabel="Crear nivel…"
+          />
         </Field>
         <Field label="Duración (hs)">
           <input className={inputCls} type="number" min="1" value={form.durationHours} onChange={set('durationHours')} />
@@ -86,13 +98,18 @@ export function CourseFields({ form, setForm, showStatus = true }) {
         )}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Modalidad">
-          <select className={inputCls} value={form.modality} onChange={set('modality')}>
-            {modalities.map((m) => <option key={m}>{m}</option>)}
-          </select>
+        <Field label="Modalidad" as="div">
+          <CreatableSelect
+            listKey="courseModalities"
+            baseOptions={modalities}
+            value={form.modality}
+            onChange={(v) => setForm((f) => ({ ...f, modality: v }))}
+            ariaLabel="Modalidad"
+            createLabel="Crear modalidad…"
+          />
         </Field>
-        <Field label="Instructor/a">
-          <input className={inputCls} value={form.instructor} onChange={set('instructor')} placeholder="Ana Torres" />
+        <Field label="Instructor/a" as="div" hint="Los perfiles se gestionan y acreditan en la sección Instructores">
+          <InstructorPicker value={form.instructor} onChange={(v) => setForm((f) => ({ ...f, instructor: v }))} />
         </Field>
       </div>
 

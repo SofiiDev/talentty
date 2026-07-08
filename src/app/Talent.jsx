@@ -6,6 +6,7 @@ import {
   EmptyState, PageHeader, Avatar, RowActions,
 } from '../components/ui.jsx'
 import BulkImportModal from '../components/forms/BulkImportModal.jsx'
+import CreatableSelect from '../components/CreatableSelect.jsx'
 
 const emptyForm = {
   name: '', email: '', notifyEmail: '', role: '', department: '', level: 'Junior',
@@ -190,10 +191,15 @@ export default function Talent() {
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Seniority">
-              <select className={inputCls} value={form.level} onChange={set('level')}>
-                {levels.map((l) => <option key={l}>{l}</option>)}
-              </select>
+            <Field label="Seniority" as="div">
+              <CreatableSelect
+                listKey="talentLevels"
+                baseOptions={levels}
+                value={form.level}
+                onChange={(v) => setForm((f) => ({ ...f, level: v }))}
+                ariaLabel="Seniority"
+                createLabel="Crear seniority…"
+              />
             </Field>
             <Field label="Estado">
               <select className={inputCls} value={form.status} onChange={set('status')}>

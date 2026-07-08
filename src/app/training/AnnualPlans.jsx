@@ -7,6 +7,7 @@ import {
 } from '../../components/ui.jsx'
 import { exportPlanPdf } from '../../lib/planPdf.js'
 import BulkImportModal from '../../components/forms/BulkImportModal.jsx'
+import CreatableSelect from '../../components/CreatableSelect.jsx'
 
 export const itemTypes = ['POE / Procedimiento', 'Curso', 'Seminario', 'Taller', 'Inducción', 'Lectura dirigida']
 export const frequencies = ['Única', 'Mensual', 'Trimestral', 'Semestral', 'Anual', 'Bienal']
@@ -174,10 +175,15 @@ function ItemFormModal({ mode, initial, onClose, onSubmit }) {
           <Field label="Código" hint="Ej: POE-001, CAP-002">
             <input className={inputCls} value={form.code} onChange={set('code')} placeholder="POE-001" />
           </Field>
-          <Field label="Tipo">
-            <select className={inputCls} value={form.type} onChange={set('type')}>
-              {itemTypes.map((t) => <option key={t}>{t}</option>)}
-            </select>
+          <Field label="Tipo" as="div">
+            <CreatableSelect
+              listKey="planItemTypes"
+              baseOptions={itemTypes}
+              value={form.type}
+              onChange={(v) => setForm((f) => ({ ...f, type: v }))}
+              ariaLabel="Tipo de capacitación"
+              createLabel="Crear tipo…"
+            />
           </Field>
           <Field label="Estado">
             <select className={inputCls} value={form.status} onChange={set('status')}>
@@ -189,10 +195,15 @@ function ItemFormModal({ mode, initial, onClose, onSubmit }) {
           <input className={inputCls} required value={form.title} onChange={set('title')} placeholder="Ej: Higiene y conducta del personal" />
         </Field>
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Frecuencia">
-            <select className={inputCls} value={form.frequency} onChange={set('frequency')}>
-              {frequencies.map((f) => <option key={f}>{f}</option>)}
-            </select>
+          <Field label="Frecuencia" as="div">
+            <CreatableSelect
+              listKey="planFrequencies"
+              baseOptions={frequencies}
+              value={form.frequency}
+              onChange={(v) => setForm((f) => ({ ...f, frequency: v }))}
+              ariaLabel="Frecuencia"
+              createLabel="Crear frecuencia…"
+            />
           </Field>
           <Field label="Mes planificado">
             <select className={inputCls} value={form.month} onChange={set('month')}>

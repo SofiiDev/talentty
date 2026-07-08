@@ -5,6 +5,7 @@ import { platformMeta, isValidLink } from '../../lib/video.jsx'
 import { useStore } from '../../store.jsx'
 import RichTextEditor from '../RichTextEditor.jsx'
 import { VideoInput } from '../VideoPlayer.jsx'
+import InstructorPicker from '../InstructorPicker.jsx'
 
 export const seminarStatuses = ['Borrador', 'Programado', 'En vivo', 'Finalizado', 'Cancelado']
 
@@ -97,8 +98,8 @@ export function SeminarFields({ form, setForm, showStatus = true }) {
             {data.courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
           </select>
         </Field>
-        <Field label="Anfitrión/a">
-          <input className={inputCls} value={form.host} onChange={set('host')} placeholder="Ana Torres" />
+        <Field label="Anfitrión/a" as="div" hint="Los perfiles se gestionan y acreditan en la sección Instructores">
+          <InstructorPicker value={form.host} onChange={(v) => setForm((f) => ({ ...f, host: v }))} ariaLabel="Anfitrión/a" />
         </Field>
       </div>
 

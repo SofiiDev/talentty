@@ -11,7 +11,7 @@ import { platformMeta } from '../lib/video.jsx'
 import { exportCertificate } from '../lib/certificatePdf.js'
 import { RatingStars } from './Courses.jsx'
 import { Modal } from '../components/ui.jsx'
-import { FileQuestion, CalendarClock } from 'lucide-react'
+import { FileQuestion, CalendarClock, BadgeCheck } from 'lucide-react'
 import { courseLessons, autoGrade, hasOpenQuestions, finalScoreOf, latestAttempt, examTotalPoints } from '../lib/course.js'
 import VideoPlayer from '../components/VideoPlayer.jsx'
 import { RichText, stripHtml } from '../components/RichTextEditor.jsx'
@@ -281,7 +281,14 @@ export default function CourseView() {
           {courseReviews.length > 0 && <div className="mt-1.5"><RatingStars value={avgRating} count={courseReviews.length} /></div>}
           <RichText html={course.description} className="mt-2 max-w-3xl text-slate-600" />
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
-            <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" /> {course.instructor || 'Sin instructor'}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <User className="h-4 w-4" /> {course.instructor || 'Sin instructor'}
+              {data.instructors?.find((i) => i.name === course.instructor)?.verified && (
+                <span className="inline-flex items-center gap-0.5 text-emerald-600" title="Instructor acreditado">
+                  <BadgeCheck className="h-4 w-4" />
+                </span>
+              )}
+            </span>
             <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" /> {course.durationHours} horas</span>
             <span className="inline-flex items-center gap-1.5"><SignalHigh className="h-4 w-4" /> {course.level}</span>
             <span className="inline-flex items-center gap-1.5"><MonitorSmartphone className="h-4 w-4" /> {course.modality}</span>

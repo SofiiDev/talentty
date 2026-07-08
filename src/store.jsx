@@ -6,6 +6,48 @@ const STORAGE_KEY = 'talentty-data-v3'
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 const seed = () => ({
+  // Opciones creadas por el usuario en los desplegables (categorías, niveles, etc.)
+  customOptions: {},
+  instructors: [
+    {
+      id: 'in1', name: 'Lucía Fernández', type: 'Persona',
+      title: 'Responsable de Garantía de Calidad', email: 'lucia.fernandez@laboratorio.com', website: '',
+      bio: 'Especialista en BPF y sistemas de calidad con 12 años en la industria farmacéutica. Dicta las capacitaciones internas de la planta.',
+      credentials: [
+        { id: 'cr1', name: 'Farmacéutica', issuer: 'Universidad de Buenos Aires', year: '2013', url: '' },
+        { id: 'cr2', name: 'Auditora líder ISO 9001', issuer: 'IRAM', year: '2019', url: '' },
+      ],
+      verified: true, verifiedBy: 'Sofía Perez (People)', verifiedAt: '2026-06-01T10:00:00.000Z',
+      verifyNote: 'Título y matrícula profesional verificados contra el registro oficial.',
+    },
+    {
+      id: 'in2', name: 'Ana Torres', type: 'Persona',
+      title: 'Directora Técnica', email: 'ana.torres@laboratorio.com', website: '',
+      bio: 'Directora Técnica con experiencia en liberación de lotes, HPLC e integridad de datos.',
+      credentials: [
+        { id: 'cr1', name: 'Bioquímica', issuer: 'Universidad Nacional de Córdoba', year: '2008', url: '' },
+      ],
+      verified: true, verifiedBy: 'Sofía Perez (People)', verifiedAt: '2026-06-01T10:05:00.000Z',
+      verifyNote: 'Matrícula y designación como DT ante ANMAT verificadas.',
+    },
+    {
+      id: 'in3', name: 'Carlos Ruiz', type: 'Persona',
+      title: 'Supervisor de Producción', email: 'carlos.ruiz@laboratorio.com', website: '',
+      bio: 'Formador interno en vestimenta y comportamiento en áreas limpias.',
+      credentials: [],
+      verified: false, verifiedBy: '', verifiedAt: null, verifyNote: '',
+    },
+    {
+      id: 'in4', name: 'Pharma Training S.A.', type: 'Empresa',
+      title: 'Consultora de capacitación GxP', email: 'contacto@pharmatraining.com', website: 'https://pharmatraining.example.com',
+      bio: 'Empresa especializada en formación BPF/GMP, validaciones e integridad de datos para laboratorios de América Latina.',
+      credentials: [
+        { id: 'cr1', name: 'Proveedor calificado de capacitación', issuer: 'CAEMe', year: '2024', url: '' },
+      ],
+      verified: true, verifiedBy: 'Garantía de Calidad', verifiedAt: '2026-05-15T09:00:00.000Z',
+      verifyNote: 'Calificación de proveedor vigente (auditoría documental 2026).',
+    },
+  ],
   locations: [
     { id: 'l1', name: 'Planta Central', type: 'Planta productiva', address: 'Av. Industrial 1250', city: 'Buenos Aires, Argentina', status: 'Operativa' },
     { id: 'l2', name: 'Laboratorio Córdoba', type: 'Laboratorio de control', address: 'Ruta 9 km 695', city: 'Córdoba, Argentina', status: 'Operativa' },
@@ -458,6 +500,16 @@ export function StoreProvider({ children }) {
     annualPlans: makeCrud('annualPlans'),
     assessments: makeCrud('assessments'),
     locations: makeCrud('locations'),
+    instructors: makeCrud('instructors'),
+    // Suma una opción creada por el usuario a un desplegable (p. ej. categorías)
+    addOption: (listKey, value) =>
+      setData((d) => ({
+        ...d,
+        customOptions: {
+          ...d.customOptions,
+          [listKey]: [...new Set([...(d.customOptions?.[listKey] || []), value])],
+        },
+      })),
     reviews: makeCrud('reviews'),
     courseQuestions: makeCrud('courseQuestions'),
     exams: makeCrud('exams'),
