@@ -158,9 +158,9 @@ const seed = () => ({
   ],
   enrollments: [
     { id: 'e1', talentId: 't1', courseId: 'c2', progress: 35, status: 'En curso', enrolledAt: '2026-06-05' },
-    { id: 'e2', talentId: 't2', courseId: 'c1', progress: 70, status: 'En curso', enrolledAt: '2026-05-20' },
-    { id: 'e3', talentId: 't3', courseId: 'c1', progress: 100, status: 'Completado', enrolledAt: '2026-04-25' },
-    { id: 'e4', talentId: 't4', courseId: 'c3', progress: 10, status: 'En curso', enrolledAt: '2026-06-12' },
+    { id: 'e2', talentId: 't2', courseId: 'c1', progress: 70, status: 'En curso', enrolledAt: '2026-05-20', dueDate: '2026-08-15' },
+    { id: 'e3', talentId: 't3', courseId: 'c1', progress: 100, status: 'Completado', enrolledAt: '2026-04-25', completedAt: '2026-06-28T15:40:00.000Z' },
+    { id: 'e4', talentId: 't4', courseId: 'c3', progress: 10, status: 'En curso', enrolledAt: '2026-06-12', dueDate: '2026-06-30' },
     { id: 'e5', talentId: 't6', courseId: 'c2', progress: 55, status: 'En curso', enrolledAt: '2026-06-01' },
   ],
   frameworks: [
@@ -320,7 +320,7 @@ const seed = () => ({
     {
       id: 'ex1', courseId: 'c1', title: 'Examen final — BPF para personal de planta',
       description: 'Evaluación final del curso: preguntas de opción múltiple (corrección automática) y una pregunta abierta (corrección manual del instructor).',
-      passScore: 70,
+      passScore: 70, dueDate: '2026-08-31',
       questions: [
         {
           id: 'q1', type: 'multiple', points: 30,

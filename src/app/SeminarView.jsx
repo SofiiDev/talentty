@@ -8,7 +8,8 @@ import { useStore } from '../store.jsx'
 import { Badge, Button, Avatar, inputCls } from '../components/ui.jsx'
 import { platformMeta } from '../lib/video.jsx'
 import { seminarStart } from '../lib/calendar.js'
-import { toEmbedUrl } from '../lib/embed.js'
+import VideoPlayer from '../components/VideoPlayer.jsx'
+import { RichText } from '../components/RichTextEditor.jsx'
 import { AddToCalendar, seminarStatusTone } from './Seminars.jsx'
 
 function countdown(seminar) {
@@ -46,7 +47,6 @@ export default function SeminarView() {
   const isAttendee = seminar.attendees.includes(viewerId)
   const remaining = countdown(seminar)
   const isLive = seminar.status === 'En vivo'
-  const videoEmbed = seminar.videoUrl ? toEmbedUrl(seminar.videoUrl) : null
 
   const joinAttendees = () =>
     seminars.update(seminar.id, { attendees: [...seminar.attendees, viewerId] })
@@ -85,7 +85,7 @@ export default function SeminarView() {
                 {course && <Badge tone="brand">Parte de un curso</Badge>}
               </div>
               <h1 className="mt-2 text-2xl font-bold text-slate-900">{seminar.title}</h1>
-              {seminar.description && <p className="mt-2 max-w-3xl text-slate-600">{seminar.description}</p>}
+              {seminar.description && <RichText html={seminar.description} className="mt-2 max-w-3xl text-slate-600" />}
               <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {seminar.date || 'Sin fecha'}</span>
                 <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" /> {seminar.time || '--:--'} hs</span>
@@ -166,17 +166,7 @@ export default function SeminarView() {
           {seminar.videoUrl && (
             <section className="rounded-2xl border border-slate-200 bg-white p-5">
               <h2 className="mb-3 font-semibold text-slate-900">Video introductorio</h2>
-              {videoEmbed ? (
-                <div className="aspect-video overflow-hidden rounded-xl bg-slate-900">
-                  <iframe src={videoEmbed} title={seminar.title} className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                </div>
-              ) : (
-                <a href={seminar.videoUrl} target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100">
-                  <PlayCircle className="h-4 w-4" /> Ver video <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              )}
+              <VideoPlayer url={seminar.videoUrl} title={seminar.title} />
             </section>
           )}
 

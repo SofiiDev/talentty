@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, CalendarClock } from 'lucide-react'
 import { useStore } from '../store.jsx'
+import { fmtDate, fmtDateTime, nowIso, isOverdue } from '../lib/format.js'
 import {
   Modal, ConfirmDelete, Button, Badge, Field, inputCls,
   EmptyState, PageHeader, Avatar, ProgressBar, RowActions,
 } from '../components/ui.jsx'
 
-const emptyForm = { talentId: '', courseId: '', progress: 0, status: 'En curso' }
+const emptyForm = { talentId: '', courseId: '', progress: 0, status: 'En curso', dueDate: '' }
 const enrollStatuses = ['En curso', 'Completado', 'Abandonado']
 
 export default function Tracking() {
@@ -30,18 +31,22 @@ export default function Tracking() {
     setModal({ mode: 'create' })
   }
   const openEdit = (item) => {
-    setForm({ ...item })
+    setForm({ ...emptyForm, ...item, dueDate: item.dueDate || '' })
     setModal({ mode: 'edit', item })
   }
 
   const submit = (e) => {
     e.preventDefault()
     const progress = Math.max(0, Math.min(100, Number(form.progress) || 0))
+    const done = progress >= 100 || form.status === 'Completado'
     const payload = {
       talentId: form.talentId,
       courseId: form.courseId,
       progress,
+      dueDate: form.dueDate,
       status: progress >= 100 ? 'Completado' : form.status,
+      // Timestamp de finalización: se conserva el original si ya estaba completada
+      completedAt: done ? (modal.item?.completedAt || nowIso()) : null,
     }
     if (modal.mode === 'create') {
       enrollments.add({ ...payload, enrolledAt: new Date().toISOString().slice(0, 10) })
@@ -106,14 +111,16 @@ export default function Tracking() {
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[700px] text-left text-sm">
+          <table className="w-full min-w-[960px] text-left text-sm">
             <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-5 py-3 font-medium">Profesional</th>
                 <th className="px-5 py-3 font-medium">Curso</th>
                 <th className="px-5 py-3 font-medium">Inscripción</th>
+                <th className="px-5 py-3 font-medium">Fecha límite</th>
                 <th className="w-52 px-5 py-3 font-medium">Progreso</th>
                 <th className="px-5 py-3 font-medium">Estado</th>
+                <th className="px-5 py-3 font-medium">Completada</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -131,8 +138,17 @@ export default function Tracking() {
                     </td>
                     <td className="max-w-56 truncate px-5 py-3 text-slate-700">{course?.title || 'Curso eliminado'}</td>
                     <td className="px-5 py-3 text-slate-500">{e.enrolledAt || '—'}</td>
+                    <td className="px-5 py-3">
+                      {e.dueDate ? (
+                        <span className={`inline-flex items-center gap-1 text-xs ${isOverdue(e.dueDate) && e.status !== 'Completado' ? 'font-semibold text-rose-600' : 'text-slate-600'}`}>
+                          <CalendarClock className="h-3.5 w-3.5" /> {fmtDate(e.dueDate)}
+                          {isOverdue(e.dueDate) && e.status !== 'Completado' && <Badge tone="rose">Vencida</Badge>}
+                        </span>
+                      ) : <span className="text-xs text-slate-400">—</span>}
+                    </td>
                     <td className="px-5 py-3"><ProgressBar value={e.progress} /></td>
                     <td className="px-5 py-3"><Badge tone={statusTone[e.status]}>{e.status}</Badge></td>
+                    <td className="px-5 py-3 text-xs text-slate-500">{e.completedAt ? fmtDateTime(e.completedAt) : '—'}</td>
                     <td className="px-5 py-3">
                       <RowActions onEdit={() => openEdit(e)} onDelete={() => setToDelete(e)} />
                     </td>
@@ -162,7 +178,10 @@ export default function Tracking() {
               {data.courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
             </select>
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <Field label="Fecha límite">
+              <input className={inputCls} type="date" value={form.dueDate} onChange={set('dueDate')} />
+            </Field>
             <Field label="Progreso (%)">
               <input className={inputCls} type="number" min="0" max="100" value={form.progress} onChange={set('progress')} />
             </Field>

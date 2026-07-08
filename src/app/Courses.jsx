@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Clock, SignalHigh, MonitorSmartphone, User, PlayCircle, FileText, Eye, Star, Search, PenSquare } from 'lucide-react'
 import { courseLessons } from '../lib/course.js'
+import { stripHtml } from '../components/RichTextEditor.jsx'
 import { useStore } from '../store.jsx'
 import {
   ConfirmDelete, Button, Badge, EmptyState, PageHeader, IconEdit, IconTrash, inputCls,
@@ -62,7 +63,7 @@ export function CourseCard({ course, enrolledCount, rating, onEdit, onDelete, on
         </Link>
       </h3>
       {rating && <div className="mt-1"><RatingStars value={rating.avg} count={rating.count} /></div>}
-      <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">{course.description}</p>
+      <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">{stripHtml(course.description)}</p>
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {course.durationHours} hs</span>
         <span className="inline-flex items-center gap-1"><SignalHigh className="h-3.5 w-3.5" /> {course.level}</span>

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Trash2, Plus, FileText, LayoutList } from 'lucide-react'
 import { Modal, Button, Field, inputCls } from '../ui.jsx'
+import RichTextEditor from '../RichTextEditor.jsx'
+import { VideoInput } from '../VideoPlayer.jsx'
 
 export const categories = ['Calidad', 'Laboratorio', 'Producción', 'Regulatorio', 'Desarrollo', 'Datos', 'Liderazgo', 'Idiomas', 'Otro']
 export const courseLevels = ['Inicial', 'Intermedio', 'Avanzado']
@@ -54,8 +56,12 @@ export function CourseFields({ form, setForm, showStatus = true }) {
       <Field label="Título del curso">
         <input className={inputCls} required value={form.title} onChange={set('title')} placeholder="Ej: BPF para personal de planta" />
       </Field>
-      <Field label="Descripción">
-        <textarea className={inputCls} rows={2} value={form.description} onChange={set('description')} placeholder="¿Qué van a aprender los participantes?" />
+      <Field label="Descripción" as="div">
+        <RichTextEditor
+          value={form.description}
+          onChange={(html) => setForm((f) => ({ ...f, description: html }))}
+          placeholder="¿Qué van a aprender los participantes? Usá títulos, listas y justificado para un temario profesional."
+        />
       </Field>
       <div className={`grid grid-cols-2 gap-4 ${showStatus ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
         <Field label="Categoría">
@@ -90,14 +96,12 @@ export function CourseFields({ form, setForm, showStatus = true }) {
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Video introductorio (URL)" hint="YouTube, Vimeo o video interno">
-          <input className={inputCls} type="url" value={form.introVideoUrl} onChange={set('introVideoUrl')} placeholder="https://youtube.com/…" />
-        </Field>
-        <Field label="Imagen de portada (URL)">
-          <input className={inputCls} type="url" value={form.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://…/portada.jpg" />
-        </Field>
-      </div>
+      <Field label="Video introductorio" as="div" hint="Pegá un enlace (YouTube, Vimeo) o subí tu propio archivo de video">
+        <VideoInput value={form.introVideoUrl} onChange={(v) => setForm((f) => ({ ...f, introVideoUrl: v }))} />
+      </Field>
+      <Field label="Imagen de portada (URL)">
+        <input className={inputCls} type="url" value={form.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://…/portada.jpg" />
+      </Field>
 
       {/* Archivos del curso */}
       <div>

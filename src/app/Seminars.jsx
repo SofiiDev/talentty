@@ -8,6 +8,7 @@ import {
 import SeminarFormModal from '../components/forms/SeminarFormModal.jsx'
 import { platformMeta } from '../lib/video.jsx'
 import { googleCalendarUrl, downloadIcs } from '../lib/calendar.js'
+import { stripHtml } from '../components/RichTextEditor.jsx'
 
 export const seminarStatusTone = { Borrador: 'amber', Programado: 'blue', 'En vivo': 'green', Finalizado: 'slate', Cancelado: 'rose' }
 
@@ -81,7 +82,7 @@ export function SeminarCard({ seminar, onEdit, onDelete }) {
             <span>{m.name}</span>
             {seminar.host && <span className="inline-flex items-center gap-1.5"><Mic className="h-4 w-4" /> {seminar.host}</span>}
           </p>
-          {seminar.description && <p className="mt-1.5 text-sm text-slate-500">{seminar.description}</p>}
+          {seminar.description && <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">{stripHtml(seminar.description)}</p>}
           {(seminar.agenda?.length || 0) > 0 && (
             <ol className="mt-2.5 space-y-0.5 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
               {seminar.agenda.slice(0, 3).map((u, i) => (

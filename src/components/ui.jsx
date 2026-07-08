@@ -76,13 +76,16 @@ export function Badge({ tone = 'slate', children }) {
   )
 }
 
-export function Field({ label, children, hint }) {
+// `as="div"` cuando el contenido incluye controles propios (editor de texto
+// enriquecido, subida de archivos): un <label> reenviaría el foco al primer
+// control interno al hacer click.
+export function Field({ label, children, hint, as: Tag = 'label' }) {
   return (
-    <label className="block">
+    <Tag className="block">
       <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
-    </label>
+    </Tag>
   )
 }
 

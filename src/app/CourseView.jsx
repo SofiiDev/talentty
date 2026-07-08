@@ -7,36 +7,15 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store.jsx'
 import { Badge, Button, Avatar, ProgressBar, inputCls, Field } from '../components/ui.jsx'
-import { toEmbedUrl } from '../lib/embed.js'
 import { platformMeta } from '../lib/video.jsx'
 import { exportCertificate } from '../lib/certificatePdf.js'
 import { RatingStars } from './Courses.jsx'
 import { Modal } from '../components/ui.jsx'
-import { FileQuestion } from 'lucide-react'
+import { FileQuestion, CalendarClock } from 'lucide-react'
 import { courseLessons, autoGrade, hasOpenQuestions, finalScoreOf, latestAttempt, examTotalPoints } from '../lib/course.js'
-
-function VideoEmbed({ url, title }) {
-  const embed = toEmbedUrl(url)
-  if (!embed) {
-    return (
-      <a href={url} target="_blank" rel="noreferrer"
-        className="inline-flex items-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100">
-        <PlayCircle className="h-4 w-4" /> Ver video <ExternalLink className="h-3.5 w-3.5" />
-      </a>
-    )
-  }
-  return (
-    <div className="aspect-video overflow-hidden rounded-xl bg-slate-900">
-      <iframe
-        src={embed}
-        title={title}
-        className="h-full w-full"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-    </div>
-  )
-}
+import VideoPlayer from '../components/VideoPlayer.jsx'
+import { RichText, stripHtml } from '../components/RichTextEditor.jsx'
+import { fmtDate, fmtDateTime, nowIso, isOverdue } from '../lib/format.js'
 
 function ExamTakeModal({ exam, viewerId, onClose }) {
   const { exams } = useStore()
@@ -49,7 +28,7 @@ function ExamTakeModal({ exam, viewerId, onClose }) {
     const attempt = {
       id: Math.random().toString(36).slice(2, 10),
       talentId: viewerId,
-      submittedAt: new Date().toISOString().slice(0, 10),
+      submittedAt: nowIso(),
       answers,
       autoScore,
       manualScores: {},
@@ -116,6 +95,7 @@ function ExamRow({ exam, viewerId }) {
   const [taking, setTaking] = useState(false)
   const attempt = latestAttempt(exam, viewerId)
   const pending = attempt?.status === 'Pendiente de corrección'
+  const overdue = isOverdue(exam.dueDate)
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 p-4">
@@ -124,7 +104,15 @@ function ExamRow({ exam, viewerId }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-slate-900">{exam.title}</p>
-        <p className="text-xs text-slate-500">{exam.questions.length} preguntas · aprobación {exam.passScore}%</p>
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
+          <span>{exam.questions.length} preguntas · aprobación {exam.passScore}%</span>
+          {exam.dueDate && (
+            <span className={`inline-flex items-center gap-1 ${overdue ? 'font-semibold text-rose-600' : ''}`}>
+              <CalendarClock className="h-3.5 w-3.5" /> Fecha límite: {fmtDate(exam.dueDate)}{overdue && ' (vencida)'}
+            </span>
+          )}
+          {attempt && <span>Entregado el {fmtDateTime(attempt.submittedAt)}</span>}
+        </p>
       </div>
       {attempt ? (
         pending ? (
@@ -134,11 +122,13 @@ function ExamRow({ exam, viewerId }) {
             <Badge tone={attempt.passed ? 'green' : 'rose'}>
               {attempt.passed ? 'Aprobado' : 'Desaprobado'} · {attempt.finalScore}%
             </Badge>
-            {!attempt.passed && (
+            {!attempt.passed && !overdue && (
               <Button variant="secondary" onClick={() => setTaking(true)}>Reintentar</Button>
             )}
           </div>
         )
+      ) : overdue ? (
+        <Badge tone="rose">Plazo vencido · no se puede rendir</Badge>
       ) : (
         <Button onClick={() => setTaking(true)}>Rendir examen</Button>
       )}
@@ -249,6 +239,8 @@ export default function CourseView() {
       completedModules: next,
       progress: nextProgress,
       status: nextProgress >= 100 ? 'Completado' : 'En curso',
+      // Timestamp de finalización: se registra al llegar al 100% y se limpia si retrocede
+      completedAt: nextProgress >= 100 ? (enrollment?.completedAt || nowIso()) : null,
     }
     if (enrollment) enrollments.update(enrollment.id, patch)
     else enrollments.add({
@@ -287,7 +279,7 @@ export default function CourseView() {
           </div>
           <h1 className="mt-3 text-2xl font-bold text-slate-900">{course.title}</h1>
           {courseReviews.length > 0 && <div className="mt-1.5"><RatingStars value={avgRating} count={courseReviews.length} /></div>}
-          <p className="mt-2 max-w-3xl text-slate-600">{course.description}</p>
+          <RichText html={course.description} className="mt-2 max-w-3xl text-slate-600" />
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
             <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" /> {course.instructor || 'Sin instructor'}</span>
             <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" /> {course.durationHours} horas</span>
@@ -303,7 +295,7 @@ export default function CourseView() {
           {course.introVideoUrl && (
             <section className="rounded-2xl border border-slate-200 bg-white p-5">
               <h2 className="mb-3 font-semibold text-slate-900">Video introductorio</h2>
-              <VideoEmbed url={course.introVideoUrl} title={`Intro — ${course.title}`} />
+              <VideoPlayer url={course.introVideoUrl} title={`Intro — ${course.title}`} />
             </section>
           )}
 
@@ -339,7 +331,7 @@ export default function CourseView() {
                                 <p className={`text-sm font-medium ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
                                   {ui + 1}.{i + 1} {m.title}
                                 </p>
-                                {m.description && !isOpen && <p className="truncate text-xs text-slate-500">{m.description}</p>}
+                                {m.description && !isOpen && <p className="truncate text-xs text-slate-500">{stripHtml(m.description)}</p>}
                               </button>
                               <div className="flex items-center gap-1.5 text-slate-500">
                                 {m.videoUrl && <PlayCircle className="h-4 w-4 text-sky-500" title="Incluye video" />}
@@ -348,8 +340,8 @@ export default function CourseView() {
                             </div>
                             {isOpen && (
                               <div className="space-y-3 border-t border-slate-100 p-4">
-                                {m.description && <p className="text-sm text-slate-600">{m.description}</p>}
-                                {m.videoUrl && <VideoEmbed url={m.videoUrl} title={m.title} />}
+                                {m.description && <RichText html={m.description} className="text-sm text-slate-600" />}
+                                {m.videoUrl && <VideoPlayer url={m.videoUrl} title={m.title} />}
                                 {m.fileUrl && (
                                   <a href={m.fileUrl} target="_blank" rel="noreferrer"
                                     className="inline-flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">
@@ -562,7 +554,15 @@ export default function CourseView() {
               <div className="mt-4">
                 <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Tu avance</p>
                 <ProgressBar value={progress} />
-                <p className="mt-2 text-xs text-slate-500">{doneCount} de {total} módulos completados</p>
+                <p className="mt-2 text-xs text-slate-500">{doneCount} de {total} lecciones completadas</p>
+                {enrollment?.dueDate && progress < 100 && (
+                  <p className={`mt-1.5 inline-flex items-center gap-1 text-xs ${isOverdue(enrollment.dueDate) ? 'font-semibold text-rose-600' : 'text-slate-500'}`}>
+                    <CalendarClock className="h-3.5 w-3.5" /> Fecha límite: {fmtDate(enrollment.dueDate)}{isOverdue(enrollment.dueDate) && ' (vencida)'}
+                  </p>
+                )}
+                {enrollment?.completedAt && (
+                  <p className="mt-1.5 text-xs font-medium text-emerald-600">Completado el {fmtDateTime(enrollment.completedAt)}</p>
+                )}
                 {progress >= 100 && (
                   <div className="mt-3 space-y-2">
                     <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">

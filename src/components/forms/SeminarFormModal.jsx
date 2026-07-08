@@ -3,6 +3,8 @@ import { ExternalLink, Plus, Trash2, FileText } from 'lucide-react'
 import { Modal, Button, Field, inputCls } from '../ui.jsx'
 import { platformMeta, isValidLink } from '../../lib/video.jsx'
 import { useStore } from '../../store.jsx'
+import RichTextEditor from '../RichTextEditor.jsx'
+import { VideoInput } from '../VideoPlayer.jsx'
 
 export const seminarStatuses = ['Borrador', 'Programado', 'En vivo', 'Finalizado', 'Cancelado']
 
@@ -81,8 +83,12 @@ export function SeminarFields({ form, setForm, showStatus = true }) {
       <Field label="Título del seminario">
         <input className={inputCls} required value={form.title} onChange={set('title')} placeholder="Ej: Workshop de integridad de datos" />
       </Field>
-      <Field label="Descripción">
-        <textarea className={inputCls} rows={2} value={form.description} onChange={set('description')} placeholder="Temario, objetivos, a quién está dirigido…" />
+      <Field label="Descripción" as="div">
+        <RichTextEditor
+          value={form.description}
+          onChange={(html) => setForm((f) => ({ ...f, description: html }))}
+          placeholder="Temario, objetivos, a quién está dirigido… Usá títulos, listas y justificado."
+        />
       </Field>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Curso vinculado (opcional)">
@@ -207,14 +213,12 @@ export function SeminarFields({ form, setForm, showStatus = true }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Video introductorio (URL)" hint="YouTube, Vimeo o video interno (opcional)">
-          <input className={inputCls} type="url" value={form.videoUrl} onChange={set('videoUrl')} placeholder="https://youtube.com/…" />
-        </Field>
-        <Field label="Imagen (URL)">
-          <input className={inputCls} type="url" value={form.imageUrl} onChange={set('imageUrl')} placeholder="https://…/flyer.jpg" />
-        </Field>
-      </div>
+      <Field label="Video introductorio" as="div" hint="Pegá un enlace (YouTube, Vimeo) o subí tu propio archivo de video">
+        <VideoInput value={form.videoUrl} onChange={(v) => setForm((f) => ({ ...f, videoUrl: v }))} />
+      </Field>
+      <Field label="Imagen (URL)">
+        <input className={inputCls} type="url" value={form.imageUrl} onChange={set('imageUrl')} placeholder="https://…/flyer.jpg" />
+      </Field>
 
       <div>
         <span className="mb-1 block text-sm font-medium text-slate-700">Materiales (PDF, presentaciones…)</span>
