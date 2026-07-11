@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useStore } from '../store.jsx'
+import { useAuth } from '../auth.jsx'
 import { Button, PageHeader, Modal } from '../components/ui.jsx'
 
 export default function Settings() {
   const { data, reset, remoteStatus } = useStore()
+  const { enabled, user } = useAuth()
   const [confirmReset, setConfirmReset] = useState(false)
 
   const backend = {
     local: { label: 'Modo local', detail: 'Los datos se guardan en este navegador (localStorage). Configurá Supabase para persistencia real multi-dispositivo.', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
     syncing: { label: 'Conectando con Supabase…', detail: 'Trayendo el estado remoto del workspace.', tone: 'bg-sky-50 text-sky-800 border-sky-200' },
-    connected: { label: 'Conectado a Supabase', detail: 'Cada cambio se sincroniza automáticamente con tu base de datos.', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    connected: { label: 'Conectado a Supabase', detail: `Sesión de ${user?.email || 'usuario'} · cada cambio se sincroniza automáticamente con el workspace de tu organización.`, tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
     error: { label: 'Error de sincronización', detail: 'Revisá las credenciales de Supabase y que la tabla workspace_state exista (ver supabase/schema.sql).', tone: 'bg-rose-50 text-rose-800 border-rose-200' },
   }[remoteStatus] || { label: remoteStatus, detail: '', tone: 'bg-slate-50 text-slate-700 border-slate-200' }
 
@@ -55,6 +57,7 @@ export default function Settings() {
           <p className="mt-3 text-xs text-slate-500">
             Guía de configuración: creá un proyecto en supabase.com, ejecutá <code className="rounded bg-slate-100 px-1">supabase/schema.sql</code> en el SQL Editor
             y cargá <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_URL</code> y <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_ANON_KEY</code> como variables de entorno en Netlify.
+            {enabled && ' El login, el workspace multi-tenant, la subida de archivos y el envío de emails quedan activos automáticamente.'}
           </p>
         </section>
 

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { NavLink, Outlet, Link } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, BookOpen, Video, CalendarDays, Target,
-  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu, ClipboardList, Building2, BadgeCheck,
+  TrendingUp, Gauge, GraduationCap, Settings, Home, Menu, ClipboardList, Building2, BadgeCheck, LogOut,
 } from 'lucide-react'
+import { useAuth } from '../auth.jsx'
 
 const sections = [
   {
@@ -77,14 +78,42 @@ function Sidebar({ onNavigate }) {
         <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/10 hover:text-white">
           <Home className="h-4.5 w-4.5" strokeWidth={1.8} /> Volver al sitio
         </Link>
-        <div className="mt-3 flex items-center gap-3 rounded-xl bg-white/5 p-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500 text-xs font-semibold text-white">SP</span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-white">Sofía Perez</p>
-            <p className="truncate text-xs text-slate-400">Admin · People</p>
-          </div>
-        </div>
+        <UserCard />
       </div>
+    </div>
+  )
+}
+
+function UserCard() {
+  const { enabled, user, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  const name = enabled && user ? (user.email || '').split('@')[0] : 'Sofía Perez'
+  const detail = enabled && user ? user.email : 'Admin · People (demo)'
+  const initials = name.slice(0, 2).toUpperCase()
+
+  const logout = async () => {
+    await signOut()
+    navigate('/login')
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-xl bg-white/5 p-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-500 text-xs font-semibold text-white">{initials}</span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium capitalize text-white">{name}</p>
+        <p className="truncate text-xs text-slate-400">{detail}</p>
+      </div>
+      {enabled && user && (
+        <button
+          onClick={logout}
+          className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"
+          title="Cerrar sesión"
+          aria-label="Cerrar sesión"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }

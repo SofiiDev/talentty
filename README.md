@@ -48,19 +48,28 @@ El repo ya incluye `netlify.toml` con el build command, el directorio de publica
 
 > La regla de redirect `/* → /index.html` es necesaria para que las rutas del SaaS (`/app/...`) funcionen al recargar la página.
 
-## Backend con Supabase (opcional)
+## Backend completo con Supabase + Netlify
 
-Sin configurar nada, la app funciona en **modo local** (localStorage). Para persistencia real multi-dispositivo:
+Sin configurar nada, la app funciona en **modo demo** (localStorage, sin login). Configurando Supabase se activa el backend completo:
+
+- 🔐 **Autenticación** (Supabase Auth): registro e inicio de sesión con email y contraseña, rutas de `/app` protegidas y cierre de sesión.
+- 🏢 **Multi-tenant**: cada usuario/organización tiene su *workspace* propio (`workspaces` + `workspace_members` + `workspace_state`) protegido con Row Level Security — nadie puede ver datos de otro workspace.
+- 🔄 **Sincronización**: todos los cambios se guardan automáticamente en la base (debounce ~1s) y se restauran al iniciar sesión desde cualquier dispositivo.
+- 📁 **Storage**: subida real de archivos (PDFs, imágenes) al bucket `archivos` desde los formularios de cursos y seminarios.
+- ✉️ **Emails**: la Netlify Function `send-assessment` envía las evaluaciones por correo vía [Resend](https://resend.com); sin configurar, se usa el cliente de correo del navegador.
+
+### Pasos (10 minutos)
 
 1. Creá un proyecto gratis en [supabase.com](https://supabase.com).
-2. En el dashboard del proyecto: **SQL Editor → New query**, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo (crea la tabla `workspace_state` con sus políticas).
-3. En **Project Settings → API** copiá la *Project URL* y la *anon public key*.
-4. En Netlify: **Site configuration → Environment variables**, agregá:
-   - `VITE_SUPABASE_URL` = la Project URL
-   - `VITE_SUPABASE_ANON_KEY` = la anon key
-   - `VITE_TALENTTY_WORKSPACE` = un identificador (opcional, default `default`)
-5. Redeployá el sitio (**Deploys → Trigger deploy**). En la app, **Configuración → Backend** muestra "Conectado a Supabase".
+2. **SQL Editor → New query**: pegá y ejecutá [`supabase/schema.sql`](supabase/schema.sql) (crea tablas, trigger de membresía, políticas RLS y el bucket de Storage).
+3. **Project Settings → API**: copiá la *Project URL* y la *anon public key*.
+4. En Netlify: **Site configuration → Environment variables**:
+   - `VITE_SUPABASE_URL` = Project URL
+   - `VITE_SUPABASE_ANON_KEY` = anon key
+   - `RESEND_API_KEY` = API key de Resend *(opcional, para emails reales)*
+   - `EMAIL_FROM` = remitente verificado *(opcional)*
+5. **Deploys → Trigger deploy**. Listo: la landing lleva a `/login`, al registrarte se crea tu workspace automáticamente, y **Configuración → Backend** muestra "Conectado a Supabase" con tu sesión.
 
-Para desarrollo local, copiá `.env.example` a `.env` y completá las variables.
+Para desarrollo local: copiá `.env.example` a `.env` y completá las variables (`npm run dev`).
 
-> ⚠️ Las políticas RLS incluidas son de demo (lectura/escritura con la anon key). Para producción multi-cliente, migrar a Supabase Auth con políticas por usuario/tenant.
+> Nota: en Supabase → **Authentication → Providers → Email** podés desactivar "Confirm email" para que el registro entre directo sin verificación (útil en pruebas).

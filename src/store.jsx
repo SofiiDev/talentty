@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { isRemoteEnabled, loadRemote, saveRemoteDebounced } from './lib/supabase.js'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { isRemoteEnabled, loadRemote, saveRemoteDebounced, resolveWorkspace } from './lib/supabase.js'
+import { useAuth } from './auth.jsx'
 
 const STORAGE_KEY = 'talentty-data-v3'
 
@@ -453,23 +454,35 @@ const load = () => {
 const StoreContext = createContext(null)
 
 export function StoreProvider({ children }) {
+  const { enabled, user } = useAuth()
   const [data, setData] = useState(load)
   const [remoteStatus, setRemoteStatus] = useState(isRemoteEnabled ? 'syncing' : 'local')
+  const workspaceRef = useRef(null)
 
-  // Al iniciar, si hay backend Supabase configurado, se trae el estado remoto
+  // Con sesión iniciada: se resuelve (o crea) el workspace del usuario y se
+  // trae su estado remoto. Cada usuario/organización tiene su propio espacio.
   useEffect(() => {
-    if (!isRemoteEnabled) return
-    loadRemote()
-      .then((remote) => {
+    if (!enabled || !user) return
+    let cancelled = false
+    setRemoteStatus('syncing')
+    resolveWorkspace()
+      .then(async (workspaceId) => {
+        if (cancelled || !workspaceId) return
+        workspaceRef.current = workspaceId
+        const remote = await loadRemote(workspaceId)
+        if (cancelled) return
         if (remote) setData({ ...seed(), ...remote })
         setRemoteStatus('connected')
       })
-      .catch(() => setRemoteStatus('error'))
-  }, [])
+      .catch(() => !cancelled && setRemoteStatus('error'))
+    return () => { cancelled = true }
+  }, [enabled, user?.id])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    saveRemoteDebounced(data, () => setRemoteStatus('error'))
+    if (workspaceRef.current) {
+      saveRemoteDebounced(workspaceRef.current, data, () => setRemoteStatus('error'))
+    }
   }, [data])
 
   const makeCrud = (key) => ({

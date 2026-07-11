@@ -6,6 +6,7 @@ import { useStore } from '../../store.jsx'
 import RichTextEditor from '../RichTextEditor.jsx'
 import { VideoInput } from '../VideoPlayer.jsx'
 import InstructorPicker from '../InstructorPicker.jsx'
+import UploadButton from './UploadButton.jsx'
 
 export const seminarStatuses = ['Borrador', 'Programado', 'En vivo', 'Finalizado', 'Cancelado']
 
@@ -247,6 +248,11 @@ export function SeminarFields({ form, setForm, showStatus = true }) {
           <Button type="button" variant="secondary" onClick={addFile} disabled={!newFile.name.trim() || !newFile.url.trim()}>
             <Plus className="h-4 w-4" /> Agregar
           </Button>
+          <UploadButton
+            folder="seminarios"
+            onUploaded={(url, name) =>
+              setForm((f) => ({ ...f, materials: [...f.materials, { id: uid(), name, url }] }))}
+          />
         </div>
       </div>
 

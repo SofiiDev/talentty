@@ -5,6 +5,7 @@ import RichTextEditor from '../RichTextEditor.jsx'
 import { VideoInput } from '../VideoPlayer.jsx'
 import CreatableSelect from '../CreatableSelect.jsx'
 import InstructorPicker from '../InstructorPicker.jsx'
+import UploadButton from './UploadButton.jsx'
 
 export const categories = ['Calidad', 'Laboratorio', 'Producción', 'Regulatorio', 'Desarrollo', 'Datos', 'Liderazgo', 'Idiomas', 'Otro']
 export const courseLevels = ['Inicial', 'Intermedio', 'Avanzado']
@@ -123,7 +124,7 @@ export function CourseFields({ form, setForm, showStatus = true }) {
       {/* Archivos del curso */}
       <div>
         <span className="mb-1 block text-sm font-medium text-slate-700">Archivos del curso (PDF, presentaciones…)</span>
-        <p className="mb-2 text-xs text-slate-500">Pegá el enlace al archivo (Drive, Dropbox, intranet o sitio propio).</p>
+        <p className="mb-2 text-xs text-slate-500">Pegá el enlace al archivo (Drive, Dropbox, intranet o sitio propio) o subilo directamente.</p>
         {form.attachments.length > 0 && (
           <ul className="mb-2 space-y-2">
             {form.attachments.map((a) => (
@@ -148,6 +149,11 @@ export function CourseFields({ form, setForm, showStatus = true }) {
           <Button type="button" variant="secondary" onClick={addFile} disabled={!newFile.name.trim() || !newFile.url.trim()}>
             <Plus className="h-4 w-4" /> Agregar
           </Button>
+          <UploadButton
+            folder="cursos"
+            onUploaded={(url, name) =>
+              setForm((f) => ({ ...f, attachments: [...f.attachments, { id: uid(), name, url }] }))}
+          />
         </div>
       </div>
     </>

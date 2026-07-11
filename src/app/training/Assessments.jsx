@@ -234,7 +234,7 @@ export default function Assessments() {
       recipients: assessment.recipients.map((r) => (r.talentId === talentId ? { ...r, ...patch } : r)),
     })
 
-  const sendEmail = (assessment, recipient) => {
+  const sendEmail = async (assessment, recipient) => {
     const talent = talentById(recipient.talentId)
     if (!talent) return
     const plan = planById(assessment.planId)
@@ -242,6 +242,21 @@ export default function Assessments() {
     const body = buildEmailBody(assessment, talent, plan?.title)
     // Usa el email de notificaciones si la persona configuró uno
     const to = talent.notifyEmail || talent.email
+
+    // Primero intenta el envío real por la Netlify Function (Resend);
+    // si no está desplegada o configurada, cae al mailto: del navegador.
+    try {
+      const res = await fetch('/.netlify/functions/send-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, text: body }),
+      })
+      if (res.ok) {
+        updateRecipient(assessment, recipient.talentId, { status: 'Enviada', sentAt: today() })
+        return
+      }
+    } catch { /* sin función disponible: fallback */ }
+
     window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self')
     updateRecipient(assessment, recipient.talentId, { status: 'Enviada', sentAt: today() })
   }
